@@ -31,13 +31,12 @@ void setup() {
 
 void loop() {
     if (messenger.receivePacket(udpPacketBuffer, UDP_PACKET_SIZE)) {
-        Serial.printf("Recebidos");
         setPointFL = udpPacketBuffer[0];
         directionFL = udpPacketBuffer[1];
-        setPointBL = udpPacketBuffer[2];
-        directionBL = udpPacketBuffer[3];
-        setPointFR = udpPacketBuffer[4];
-        directionFR = udpPacketBuffer[5];
+        setPointFR = udpPacketBuffer[2];
+        directionFR = udpPacketBuffer[3];
+        setPointBL = udpPacketBuffer[4];
+        directionBL = udpPacketBuffer[5];
         setPointBR = udpPacketBuffer[6];
         directionBR = udpPacketBuffer[7];
         kickerCommand = (udpPacketBuffer[8] == 1);
@@ -48,9 +47,13 @@ void loop() {
         Serial.printf("Kicker: %s\n", kickerCommand ? "Sim" : "Nao");
 
         ssl.setMotorFL(setPointFL, directionFL);
+        Serial.printf("Mandado.");
         ssl.setMotorBL(setPointBL, directionBL);
+        Serial.printf("Mandado.");
         ssl.setMotorFR(setPointFR, directionFR);
+        Serial.printf("Mandado.");
         ssl.setMotorBR(setPointBR, directionBR);
+        Serial.printf("Mandado.");
 
         if (kickerCommand) {
             ssl.kick();

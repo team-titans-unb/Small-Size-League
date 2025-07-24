@@ -2,20 +2,20 @@
 #define CONFIG_H
 
 // Motor Frente Esquerda (FL)
-#define MOTOR_FRONT_LEFT_IN1    25
-#define MOTOR_FRONT_LEFT_IN2    19
+#define MOTOR_FRONT_LEFT_IN1    4
+#define MOTOR_FRONT_LEFT_IN2    18 // não funciona
+
+// Motor Frente Direita (FR)
+#define MOTOR_FRONT_RIGHT_IN1   25 //  não funciona
+#define MOTOR_FRONT_RIGHT_IN2   26
 
 // Motor Traseira Esquerda (BL)
 #define MOTOR_BACK_LEFT_IN1     32
 #define MOTOR_BACK_LEFT_IN2     33
 
-// Motor Frente Direita (FR)
-#define MOTOR_FRONT_RIGHT_IN1   22
-#define MOTOR_FRONT_RIGHT_IN2   26
-
 // Motor Traseira Direita (BR)
 #define MOTOR_BACK_RIGHT_IN1    21
-#define MOTOR_BACK_RIGHT_IN2    18
+#define MOTOR_BACK_RIGHT_IN2    19
 
 #define ROBOT_CHANEL_FL1    0
 #define ROBOT_CHANEL_FL2    1
