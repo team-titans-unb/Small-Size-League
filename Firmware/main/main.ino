@@ -2,12 +2,6 @@
 #include "communication/communication.h"
 #include "config.h"
 
-volatile int setPointFL = 0, directionFL = 0;
-volatile int setPointBL = 0, directionBL = 0;
-volatile int setPointFR = 0, directionFR = 0;
-volatile int setPointBR = 0, directionBR = 0;
-volatile bool kickerCommand = false;
-
 Robot ssl(MOTOR_FRONT_LEFT_IN1, MOTOR_FRONT_LEFT_IN2, ROBOT_CHANEL_FL1, ROBOT_CHANEL_FL2,
               MOTOR_BACK_LEFT_IN1, MOTOR_BACK_LEFT_IN2, ROBOT_CHANEL_BL1, ROBOT_CHANEL_BL2,
               MOTOR_FRONT_RIGHT_IN1, MOTOR_FRONT_RIGHT_IN2, ROBOT_CHANEL_FR1, ROBOT_CHANEL_FR2,
@@ -17,7 +11,19 @@ Robot ssl(MOTOR_FRONT_LEFT_IN1, MOTOR_FRONT_LEFT_IN2, ROBOT_CHANEL_FL1, ROBOT_CH
 Communication messenger(NETWORK, PASSWORD, PORT);
 
 const size_t UDP_PACKET_SIZE = 9;
-uint8_t udpPacketBuffer[UDP_PACKET_SIZE];
+struct __attribute__((packed)) MessagePacket {
+    uint8_t setPointFL;
+    uint8_t directionFL;
+    uint8_t setPointFR;
+    uint8_t directionFR;
+    uint8_t setPointBL;
+    uint8_t directionBL;
+    uint8_t setPointBR;
+    uint8_t directionBR;
+    uint8_t kickerCommand; // Use 1 for kick, 0 for no kick
+};
+
+static_assert(sizeof(MessagePacket) == UDP_PACKET_SIZE, "MessagePacket size mismatch!");
 
 void setup() {
     Serial.begin(19200);
@@ -27,33 +33,21 @@ void setup() {
 }
 
 void loop() {
-    if (messenger.receivePacket(udpPacketBuffer, UDP_PACKET_SIZE)) {
-        setPointFL = udpPacketBuffer[0];
-        directionFL = udpPacketBuffer[1];
-        setPointFR = udpPacketBuffer[2];
-        directionFR = udpPacketBuffer[3];
-        setPointBL = udpPacketBuffer[4];
-        directionBL = udpPacketBuffer[5];
-        setPointBR = udpPacketBuffer[6];
-        directionBR = udpPacketBuffer[7];
-        kickerCommand = (udpPacketBuffer[8] == 1);
+    MessagePacket packet;
+    if (messenger.receivePacket(reinterpret_cast<uint8_t*>(&packet), sizeof(packet))) {
+        Serial.printf("Front-left: %d (Dir: %d), Back-left: %d (Dir: %d)\n", packet.setPointFL, packet.directionFL, packet.setPointBL, packet.directionBL);
+        Serial.printf("Front-right: %d (Dir: %d), Back-right: %d (Dir: %d)\n", packet.setPointFR, packet.directionFR, packet.setPointBR, packet.directionBR);
+        Serial.printf("Kicker: %s\n", packet.kickerCommand == 1 ? "Sim" : "Nao");
+        ssl.setMotorFL(packet.setPointFL, packet.directionFL);
+        ssl.setMotorBL(packet.setPointBL, packet.directionBL);
+        ssl.setMotorFR(packet.setPointFR, packet.directionFR);
+        ssl.setMotorBR(packet.setPointBR, packet.directionBR);
 
-        Serial.printf("Received from %s:%d\n", messenger.getRemoteIP().toString().c_str(), messenger.getRemotePort());
-        Serial.printf("FL: %d (Dir: %d), BL: %d (Dir: %d)\n", setPointFL, directionFL, setPointBL, directionBL);
-        Serial.printf("FR: %d (Dir: %d), BR: %d (Dir: %d)\n", setPointFR, directionFR, setPointBR, directionBR);
-        Serial.printf("Kicker: %s\n", kickerCommand ? "Sim" : "Nao");
-
-        ssl.setMotorFL(setPointFL, directionFL);
-        Serial.printf("Mandado.");
-        ssl.setMotorBL(setPointBL, directionBL);
-        Serial.printf("Mandado.");
-        ssl.setMotorFR(setPointFR, directionFR);
-        Serial.printf("Mandado.");
-        ssl.setMotorBR(setPointBR, directionBR);
-        Serial.printf("Mandado.");
-
-        if (kickerCommand) {
+        if (packet.kickerCommand == 1) {
             ssl.kick();
         }
+    }
+    else {
+        ssl.StopAllMotors();
     }
 }
