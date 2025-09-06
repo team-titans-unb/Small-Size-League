@@ -1,32 +1,53 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Motor Frente Esquerda (FL)
-#define MOTOR_FRONT_LEFT_IN1    4
-#define MOTOR_FRONT_LEFT_IN2    18 // não funciona
+struct MotorPins {
+    int in1_pin;
+    int in2_pin;
+    int channel1;
+    int channel2;
+};
 
-// Motor Frente Direita (FR)
-#define MOTOR_FRONT_RIGHT_IN1   25 //  não funciona
-#define MOTOR_FRONT_RIGHT_IN2   26
+struct RobotConfig {
+    MotorPins frontLeft;
+    MotorPins backLeft;
+    MotorPins frontRight;
+    MotorPins backRight;
+    int kickerPin;
+};
 
-// Motor Traseira Esquerda (BL)
-#define MOTOR_BACK_LEFT_IN1     32
-#define MOTOR_BACK_LEFT_IN2     33
+enum RobotID {
+    ALVIN,
+    SIMON,
+    THEODORE
+};
 
-// Motor Traseira Direita (BR)
-#define MOTOR_BACK_RIGHT_IN1    21
-#define MOTOR_BACK_RIGHT_IN2    19
+// PINS FOR ALVIN
+const RobotConfig ALVIN_CONFIG = {
+    .frontLeft  = {26, 25, 0, 1}, // {IN1, IN2, CHAN1, CHAN2}
+    .backLeft   = {21, 19, 2, 3},
+    .frontRight = {32, 33, 4, 5},
+    .backRight  = {4, 18, 6, 7},
+    .kickerPin  = 27
+};
 
-#define ROBOT_CHANEL_FL1    0
-#define ROBOT_CHANEL_FL2    1
-#define ROBOT_CHANEL_BL1    2
-#define ROBOT_CHANEL_BL2    3
-#define ROBOT_CHANEL_FR1    4
-#define ROBOT_CHANEL_FR2    5
-#define ROBOT_CHANEL_BR1    6
-#define ROBOT_CHANEL_BR2    7
+// PINS FOR SIMON
+const RobotConfig SIMON_CONFIG = {
+    .frontLeft  = {26, 25, 0, 1}, // {IN1, IN2, CHAN1, CHAN2}
+    .backLeft   = {21, 19, 2, 3},
+    .frontRight = {32, 33, 4, 5},
+    .backRight  = {4, 18, 6, 7},
+    .kickerPin  = 27
+};
 
-#define KICKER_SOLENOID_PIN     27
+// PINS FOR THEODORE
+const RobotConfig THEODORE_CONFIG = {
+    .frontLeft  = {26, 25, 0, 1}, // {IN1, IN2, CHAN1, CHAN2}
+    .backLeft   = {21, 19, 2, 3},
+    .frontRight = {32, 33, 4, 5},
+    .backRight  = {4, 18, 6, 7},
+    .kickerPin  = 27
+};
 
 #define NETWORK                 "labmicro"
 #define PASSWORD                "l@bm!cro2023"

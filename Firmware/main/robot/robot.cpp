@@ -1,17 +1,21 @@
 #include <Arduino.h>
 #include "robot.h"
 
-Robot::Robot(uint8_t pin_FL1, uint8_t pin_FL2, uint8_t channel_FL1, uint8_t channel_FL2,
-             uint8_t pin_BL1, uint8_t pin_BL2, uint8_t channel_BL1, uint8_t channel_BL2,
-             uint8_t pin_FR1, uint8_t pin_FR2, uint8_t channel_FR1, uint8_t channel_FR2,
-             uint8_t pin_BR1, uint8_t pin_BR2, uint8_t channel_BR1, uint8_t channel_BR2,
-             uint8_t kickerPin)
-    : motorFL(pin_FL1, pin_FL2, channel_FL1, channel_FL2),
-      motorBL(pin_BL1, pin_BL2, channel_BL1, channel_BL2),
-      motorFR(pin_FR1, pin_FR2, channel_FR1, channel_FR2),
-      motorBR(pin_BR1, pin_BR2, channel_BR1, channel_BR2),
-      _kickerPin(kickerPin)
+Robot::Robot(RobotID id) : Robot( (id == ALVIN) ? ALVIN_CONFIG :
+                                  (id == SIMON) ? SIMON_CONFIG :
+                                                THEODORE_CONFIG )
 {
+    Serial.printf("Initializing with config for Robot ID: %d\n", id);
+}
+
+Robot::Robot(const RobotConfig& config)
+    : motorFL(config.frontLeft.in1_pin, config.frontLeft.in2_pin, config.frontLeft.channel1, config.frontLeft.channel2),
+      motorBL(config.backLeft.in1_pin, config.backLeft.in2_pin, config.backLeft.channel1, config.backLeft.channel2),
+      motorFR(config.frontRight.in1_pin, config.frontRight.in2_pin, config.frontRight.channel1, config.frontRight.channel2),
+      motorBR(config.backRight.in1_pin, config.backRight.in2_pin, config.backRight.channel1, config.backRight.channel2),
+      _kickerPin(config.kickerPin)
+{
+    Serial.println("Robot instance created with provided configuration.");
 }
 
 void Robot::initializeRobot() {

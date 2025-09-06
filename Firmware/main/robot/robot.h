@@ -3,14 +3,11 @@
 
 #include <Arduino.h>
 #include "../motor_control/motor.h"
+#include "../config.h"
 
 class Robot {
 public:
-    Robot(uint8_t pin_FL1, uint8_t pin_FL2, uint8_t channel_FL1, uint8_t channel_FL2,
-          uint8_t pin_BL1, uint8_t pin_BL2, uint8_t channel_BL1, uint8_t channel_BL2,
-          uint8_t pin_FR1, uint8_t pin_FR2, uint8_t channel_FR1, uint8_t channel_FR2,
-          uint8_t pin_BR1, uint8_t pin_BR2, uint8_t channel_BR1, uint8_t channel_BR2,
-          uint8_t kickerPin);
+    explicit Robot(RobotID id);
 
     void initializeRobot();
 
@@ -23,6 +20,7 @@ public:
     void StopAllMotors();
 
 private:
+    explicit Robot(const RobotConfig& config);
     Motor motorFL;
     Motor motorBL;
     Motor motorFR;
