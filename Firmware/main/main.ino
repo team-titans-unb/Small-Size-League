@@ -1,8 +1,5 @@
 #include "robot/robot.h"
 #include "communication/communication.h"
-#include "robot/robot.cpp"
-#include "communication/communication.cpp"
-#include "motor_control/motor.cpp"
 #include "config.h"
 
 volatile int setPointFL = 0, directionFL = 0;

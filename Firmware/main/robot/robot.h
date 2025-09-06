@@ -2,7 +2,7 @@
 #define Robot_h
 
 #include <Arduino.h>
-#include "motor_control/motor.h"
+#include "../motor_control/motor.h"
 
 class Robot {
 public:
