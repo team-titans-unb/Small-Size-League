@@ -23,6 +23,8 @@ struct __attribute__((packed)) MessagePacket {
 
 static_assert(sizeof(MessagePacket) == UDP_PACKET_SIZE, "MessagePacket size mismatch!");
 
+unsigned long lastPacketTime = 0;
+
 void setup() {
     Serial.begin(19200);
     ssl.initializeRobot();
@@ -33,9 +35,8 @@ void setup() {
 void loop() {
     MessagePacket packet;
     if (messenger.receivePacket(reinterpret_cast<uint8_t*>(&packet), sizeof(packet))) {
-        Serial.printf("Front-left: %d (Dir: %d), Back-left: %d (Dir: %d)\n", packet.setPointFL, packet.directionFL, packet.setPointBL, packet.directionBL);
-        Serial.printf("Front-right: %d (Dir: %d), Back-right: %d (Dir: %d)\n", packet.setPointFR, packet.directionFR, packet.setPointBR, packet.directionBR);
-        Serial.printf("Kicker: %s\n", packet.kickerCommand == 1 ? "Sim" : "Nao");
+        lastPacketTime = millis();
+        
         ssl.setMotorFL(packet.setPointFL, packet.directionFL);
         ssl.setMotorBL(packet.setPointBL, packet.directionBL);
         ssl.setMotorFR(packet.setPointFR, packet.directionFR);
@@ -45,7 +46,7 @@ void loop() {
             ssl.kick();
         }
     }
-    else {
+    if (millis() - lastPacketTime > 500) {
         ssl.StopAllMotors();
     }
 }
