@@ -17,7 +17,7 @@ public:
     void setMotorBR(int speed, int direction);
 
     void kick();
-    void StopAllMotors();
+    void stopAllMotors();
 
 private:
     explicit Robot(const RobotConfig& config);

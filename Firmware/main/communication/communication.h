@@ -4,15 +4,13 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include "../config.h"
+#include "network_protocol.h"
 
 class Communication {
 public:
     explicit Communication(const NetworkConfig& config);
-
     void begin(); 
-
-    bool receivePacket(uint8_t* buffer, size_t bufferSize);
-
+    bool receivePacket(MessagePacket& packet);
     IPAddress getRemoteIP();
     int getRemotePort();
 
@@ -23,6 +21,7 @@ private:
     WiFiUDP Udp;
     IPAddress _remoteIP;
     int _remotePort;
+    bool receivePacket(uint8_t* buffer, size_t size);
 };
 
 #endif

@@ -53,7 +53,7 @@ void Robot::kick() {
     Serial.println("Kicker acionado!");
 }
 
-void Robot::StopAllMotors() {
+void Robot::stopAllMotors() {
     motorFL.stop();
     motorBL.stop();
     motorFR.stop();

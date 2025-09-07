@@ -1,5 +1,7 @@
 #include "robot/robot.h"
 #include "communication/communication.h"
+#include "communication/network_protocol.h"
+#include "robot_controller/robot_controller.h"
 #include "config.h"
 
 // --- Configuration Section ---
@@ -7,21 +9,7 @@ const RobotID CURRENT_ROBOT = SIMON; // Change to ALVIN, SIMON, or THEODORE
 Robot robot(CURRENT_ROBOT);
 
 Communication messenger(LAB_WIFI_CONFIG);
-
-const size_t UDP_PACKET_SIZE = 9;
-struct __attribute__((packed)) MessagePacket {
-    uint8_t setPointFL;
-    uint8_t directionFL;
-    uint8_t setPointFR;
-    uint8_t directionFR;
-    uint8_t setPointBL;
-    uint8_t directionBL;
-    uint8_t setPointBR;
-    uint8_t directionBR;
-    uint8_t kickerCommand; // Use 1 for kick, 0 for no kick
-};
-
-static_assert(sizeof(MessagePacket) == UDP_PACKET_SIZE, "MessagePacket size mismatch!");
+// --- End Configuration Section ---
 
 unsigned long lastPacketTime = 0;
 
@@ -29,24 +17,23 @@ void setup() {
     Serial.begin(19200);
     robot.initializeRobot();
     messenger.begin();
-    Serial.println("Robo SSL inicializado e aguardando dados UDP!");
+    Serial.println("Robot ready and waiting for commands...");
 }
 
+/**
+ * Main loop function
+ * 
+ * - Continuously checks for incoming message packets.
+ * - If a packet is received, updates the timestamp and dispatches the packet to the robot controller.
+ * - If no packet is received for more than 500 milliseconds, stops all robot motors as a safety measure.
+ */
 void loop() {
     MessagePacket packet;
-    if (messenger.receivePacket(reinterpret_cast<uint8_t*>(&packet), sizeof(packet))) {
+    if (messenger.receivePacket(packet)) {
         lastPacketTime = millis();
-        
-        robot.setMotorFL(packet.setPointFL, packet.directionFL);
-        robot.setMotorBL(packet.setPointBL, packet.directionBL);
-        robot.setMotorFR(packet.setPointFR, packet.directionFR);
-        robot.setMotorBR(packet.setPointBR, packet.directionBR);
-
-        if (packet.kickerCommand == 1) {
-            robot.kick();
-        }
+        handlePacket(robot, packet);
     }
     if (millis() - lastPacketTime > 500) {
-        robot.StopAllMotors();
+        robot.stopAllMotors();
     }
 }

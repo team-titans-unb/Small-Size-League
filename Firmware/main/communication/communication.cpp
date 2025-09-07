@@ -37,6 +37,13 @@ void Communication::begin() {
     }
 }
 
+bool Communication::receivePacket(MessagePacket& packet) {
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(&packet);
+    size_t size = sizeof(packet);
+    
+    return this->receivePacket(buffer, size);
+}
+
 bool Communication::receivePacket(uint8_t* buffer, size_t bufferSize) {
     int packetSize = Udp.parsePacket();
     if (packetSize) {
