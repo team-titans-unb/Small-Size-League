@@ -4,7 +4,7 @@
 
 const RobotID CURRENT_ROBOT = SIMON;
 
-Robot ssl(CURRENT_ROBOT);
+Robot robot(CURRENT_ROBOT);
 
 Communication messenger(NETWORK, PASSWORD, PORT);
 
@@ -27,7 +27,7 @@ unsigned long lastPacketTime = 0;
 
 void setup() {
     Serial.begin(19200);
-    ssl.initializeRobot();
+    robot.initializeRobot();
     messenger.begin();
     Serial.println("Robo SSL inicializado e aguardando dados UDP!");
 }
@@ -37,16 +37,16 @@ void loop() {
     if (messenger.receivePacket(reinterpret_cast<uint8_t*>(&packet), sizeof(packet))) {
         lastPacketTime = millis();
         
-        ssl.setMotorFL(packet.setPointFL, packet.directionFL);
-        ssl.setMotorBL(packet.setPointBL, packet.directionBL);
-        ssl.setMotorFR(packet.setPointFR, packet.directionFR);
-        ssl.setMotorBR(packet.setPointBR, packet.directionBR);
+        robot.setMotorFL(packet.setPointFL, packet.directionFL);
+        robot.setMotorBL(packet.setPointBL, packet.directionBL);
+        robot.setMotorFR(packet.setPointFR, packet.directionFR);
+        robot.setMotorBR(packet.setPointBR, packet.directionBR);
 
         if (packet.kickerCommand == 1) {
-            ssl.kick();
+            robot.kick();
         }
     }
     if (millis() - lastPacketTime > 500) {
-        ssl.StopAllMotors();
+        robot.StopAllMotors();
     }
 }
