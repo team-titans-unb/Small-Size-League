@@ -1,5 +1,5 @@
-#include "RadioCommunication.h"
-#include <SPI.h> 
+#include <RadioCommunication.h>
+#include <SPI.h>
 
 RadioCommunication::RadioCommunication(RF24& radio, const byte* address)
     : _radio(radio), _address(address) {}

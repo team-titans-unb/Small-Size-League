@@ -2,7 +2,7 @@
 #define Motor_h
 
 #include <Arduino.h>
-#include "config.h"
+#include <config.h>
 
 #ifdef ESP32
 #define LEDC_TIMER_BITS    8

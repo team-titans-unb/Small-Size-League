@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "communication.h"
+#include <communication.h>
 
 Communication::Communication(const NetworkConfig& config)
     : _ssid(config.ssid),

@@ -2,8 +2,8 @@
 #define Robot_h
 
 #include <Arduino.h>
-#include "../motor_control/motor.h"
-#include "../config.h"
+#include <motor.h>
+#include <config.h>
 
 class Robot {
 public:

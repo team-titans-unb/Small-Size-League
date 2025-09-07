@@ -1,9 +1,13 @@
-#include "motor.h"
 #include <Arduino.h>
+#include <motor.h>
 
 #ifdef ESP32
 #include <esp32-hal-ledc.h>
 #endif
+
+#define LEDC_BASE_FREQ 5000
+#define LEDC_TIMER_BITS 8
+
 
 Motor::Motor(uint8_t pin1, uint8_t pin2, uint8_t channel1, uint8_t channel2)
     : _pin1(pin1), _pin2(pin2), _channel1(channel1), _channel2(channel2)
@@ -15,10 +19,13 @@ void Motor::begin() {
     pinMode(_pin2, OUTPUT);
 
 #ifdef ESP32
-    ledcAttachChannel(_pin1, LEDC_BASE_FREQ, LEDC_TIMER_BITS, _channel1);
-    ledcAttachChannel(_pin2, LEDC_BASE_FREQ, LEDC_TIMER_BITS, _channel2);
-    ledcAttach(_pin1, LEDC_BASE_FREQ, LEDC_TIMER_BITS);
-    ledcAttach(_pin2, LEDC_BASE_FREQ, LEDC_TIMER_BITS);
+    // Step 1: Configure the PWM channels with a frequency and resolution
+    ledcSetup(_channel1, LEDC_BASE_FREQ, LEDC_TIMER_BITS);
+    ledcSetup(_channel2, LEDC_BASE_FREQ, LEDC_TIMER_BITS);
+
+    // Step 2: Attach the GPIO pins to their respective configured channels
+    ledcAttachPin(_pin1, _channel1);
+    ledcAttachPin(_pin2, _channel2);
 #endif
 
     stop();

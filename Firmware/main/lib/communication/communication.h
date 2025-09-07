@@ -3,8 +3,8 @@
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
-#include "../config.h"
-#include "network_protocol.h"
+#include <config.h>
+#include <network_protocol.h>
 
 class Communication {
 public:

@@ -1,8 +1,9 @@
-#include "robot/robot.h"
-#include "communication/communication.h"
-#include "communication/network_protocol.h"
-#include "robot_controller/robot_controller.h"
-#include "config.h"
+#include <Arduino.h>
+#include <robot.h>
+#include <communication.h>
+#include <network_protocol.h>
+#include <robot_controller.h>
+#include <config.h>
 
 // --- Configuration Section ---
 const RobotID CURRENT_ROBOT = SIMON; // Change to ALVIN, SIMON, or THEODORE

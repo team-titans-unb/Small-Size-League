@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "robot.h"
+#include <robot.h>
 
 Robot::Robot(RobotID id) : Robot( (id == ALVIN) ? ALVIN_CONFIG :
                                   (id == SIMON) ? SIMON_CONFIG :
