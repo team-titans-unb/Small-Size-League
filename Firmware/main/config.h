@@ -49,9 +49,17 @@ const RobotConfig THEODORE_CONFIG = {
     .kickerPin  = 27
 };
 
-#define NETWORK                 "labmicro"
-#define PASSWORD                "l@bm!cro2023"
-#define PORT                    8080
+struct NetworkConfig {
+    const char* ssid;
+    const char* password;
+    int port;
+};
+
+// --- AVAILABLE NETWORK CONFIGURATIONS ---
+const NetworkConfig LAB_WIFI_CONFIG = { "labmicro", "l@bm!cro2023", 8080 };
+// ...
+// Add a new one? Just add it here! No other files need to change. (Except main.ino to choose which one to use)
+const NetworkConfig MOBILE_HOTSPOT_CONFIG = { "MyPhone", "12345678", 9000 }; // Example
 
 #define WHEEL_DIAMETER_MM       60
 

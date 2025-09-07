@@ -1,8 +1,13 @@
 #include <Arduino.h>
 #include "communication.h"
 
-Communication::Communication(const char* ssid, const char* password, int port)
-    : _ssid(ssid), _password(password), _port(port) {}
+Communication::Communication(const NetworkConfig& config)
+    : _ssid(config.ssid),
+    _password(config.password),
+    _port(config.port)
+{
+    Serial.printf("Communication instance created for network: %s\n", _ssid);
+}
 
 void Communication::begin() {
     Serial.print("Conectando-se a ");

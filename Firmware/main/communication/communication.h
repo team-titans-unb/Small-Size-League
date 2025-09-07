@@ -3,10 +3,11 @@
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include "../config.h"
 
 class Communication {
 public:
-    Communication(const char* ssid, const char* password, int port);
+    explicit Communication(const NetworkConfig& config);
 
     void begin(); 
 

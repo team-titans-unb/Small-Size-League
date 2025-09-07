@@ -2,11 +2,11 @@
 #include "communication/communication.h"
 #include "config.h"
 
-const RobotID CURRENT_ROBOT = SIMON;
-
+// --- Configuration Section ---
+const RobotID CURRENT_ROBOT = SIMON; // Change to ALVIN, SIMON, or THEODORE
 Robot robot(CURRENT_ROBOT);
 
-Communication messenger(NETWORK, PASSWORD, PORT);
+Communication messenger(LAB_WIFI_CONFIG);
 
 const size_t UDP_PACKET_SIZE = 9;
 struct __attribute__((packed)) MessagePacket {
