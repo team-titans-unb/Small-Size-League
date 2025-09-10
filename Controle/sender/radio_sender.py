@@ -5,9 +5,10 @@ class RadioSender:
     def __init__(self, port, baudrate=115200):
         self.ser = serial.Serial(port, baudrate, timeout=1)
         self.packet_size = 10
+        time.sleep(1)
         print(f"RadioSender configurado: via {port}@{baudrate}")
 
-    def send_command(self,robot_id, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
+    def send_command(self, robot_id, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
         # clamp values
         fl_s = max(0, min(255, int(fl_s)))
         fl_d = max(0, min(1, int(fl_d)))
@@ -37,8 +38,8 @@ class RadioSender:
 
 
 if __name__ == '__main__':
-    SERIAL_PORT = '/dev/ttyUSB0'  # altere para a porta real
-    ROBOT_ID = 1
+    SERIAL_PORT = '/dev/ttyACM0'  # altere para a porta real
+    ROBOT_ID = 2
 
     sender_test = RadioSender(SERIAL_PORT, 115200)
 
@@ -46,19 +47,25 @@ if __name__ == '__main__':
 
     try:
         # Função helper para simplificar testes
-        def test_cmd(string_cmd, *args, delay: float = 2):
-            print(f"\n[ROBO {ROBOT_ID}] {string_cmd}")
-            sender_test.send_command(*args)
+        def test_cmd(*args, delay: float = 2):
+            # envia comando para o robô
+            sender_test.send_command(ROBOT_ID, *args)
             time.sleep(delay)
-            print(f"[ROBO {ROBOT_ID}] Desativando todas as rodas")
-            sender_test.send_command(ROBOT_ID,0,0,0,0,0,0,0,0,0)
+            # desativa todas as rodas
+            sender_test.send_command(ROBOT_ID, 0,0,0,0,0,0,0,0,0)
             time.sleep(1)
 
-        test_cmd("Chutar", 0,0,0,0,0,0,0,0,True, delay=0.1)
-        test_cmd("Roda frente-esquerda frente", 250,0,0,0,0,0,0,0,False, delay=5)
-        test_cmd("Roda frente-esquerda trás", 250,1,0,0,0,0,0,0,False, delay=5)
-        test_cmd("Todas rodas frente", 250,0,250,0,250,0,250,0,False, delay=5)
-        test_cmd("Todas rodas trás", 250,1,250,1,250,1,150,1,False, delay=5)
+
+        # Chute
+        test_cmd(0,0,0,0,0,0,0,0,True, delay=5)
+        # Roda frente-esquerda frente
+        test_cmd(250,0,0,0,0,0,0,0,False, delay=5)
+        # Roda frente-esquerda trás
+        test_cmd(250,1,0,0,0,0,0,0,False, delay=5)
+        # Roda trás-esquerda frente
+        test_cmd(250,0,250,0,250,0,250,0,False, delay=5)
+        # Todas rodas frente
+        test_cmd(250,1,250,1,250,1,150,1,False, delay=5) # Todas rodas trás
 
     except KeyboardInterrupt:
         print("\nTeste interrompido pelo usuário.")
