@@ -58,5 +58,5 @@ void Robot::stopAllMotors() {
     motorBL.stop();
     motorFR.stop();
     motorBR.stop();
-    Serial.println("All motors stopped.");
+    //Serial.println("All motors stopped.");
 }

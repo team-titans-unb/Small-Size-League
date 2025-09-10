@@ -22,8 +22,8 @@ class UdpSender:
 
         packet = bytearray([
             fl_s, fl_d,
-            bl_s, bl_d,
             fr_s, fr_d,
+            bl_s, bl_d,
             br_s, br_d,
             kicker_byte
         ])
@@ -36,7 +36,7 @@ class UdpSender:
 
 if __name__ == '__main__':
     import time
-    ROBOT_TEST_IP = '10.74.1.122'
+    ROBOT_TEST_IP = '192.168.0.100'
     ROBOT_TEST_PORT = 8080
 
     sender_test = UdpSender(ROBOT_TEST_IP, ROBOT_TEST_PORT)
@@ -44,78 +44,15 @@ if __name__ == '__main__':
     print("Verifique a saída serial do seu ESP32 para confirmar o recebimento.")
 
     try:
-        print("\nTeste 1: Chutar (velocidade 0, kicker True)")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, True)
-        time.sleep(0.1)
-        print("\nDesativando o kicker")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(1)
-
-        print("\nTeste 2: Mover roda da frente-esquerda para frente")
-        sender_test.send_command(250, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 3: Mover roda da frente-esquerda para trás")
-        sender_test.send_command(250, 1, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-        
-        print("\nTeste 4: Mover roda da frente-direita para frente")
-        sender_test.send_command(0, 0, 250, 0, 0, 0, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 5: Mover roda da frente-direita para trás")
-        sender_test.send_command(0, 0, 250, 1, 0, 0, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 6: Mover roda da traseira-esquerda para frente")
-        sender_test.send_command(0, 0, 0, 0, 250, 0, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 7: Mover roda da traseira-esquerda para trás")
-        sender_test.send_command(0, 0, 0, 0, 250, 1, 0, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 8: Mover roda da traseira-direita para frente")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 250, 0, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 9: Mover roda da traseira-direita para trás")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 250, 1, False)
-        time.sleep(10)
-        print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
-        time.sleep(2)
-
-        print("\nTeste 10: Mover todas as rodas para frente")
+        print("\nTeste 1: Mover todas as rodas para frente")
         sender_test.send_command(250, 0, 250, 0, 250, 0, 250, 0, False)
         time.sleep(10)
         print("\nDesativando todas as rodas")
         sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
         time.sleep(2)
 
-        print("\nTeste 11: Mover todas as rodas para trás")
-        sender_test.send_command(250, 1, 250, 1, 250, 1, 150, 1, False)
+        print("\nTeste 2: Mover todas as rodas para trás")
+        sender_test.send_command(250, 1, 250, 1, 250, 1, 250, 1, False)
         time.sleep(10)
         print("\nDesativando todas as rodas")
         sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)

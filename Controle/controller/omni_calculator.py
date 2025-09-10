@@ -15,17 +15,17 @@ class OmniCalculator:
         self.max_motor_pwm = 255
 
         # Ângulos das rodas em relação ao eixo X positivo do robô (em radianos)
-        self.angle_fl = math.radians(135)
-        self.angle_bl = math.radians(225)
-        self.angle_fr = math.radians(45)
-        self.angle_br = math.radians(315)
+        self.angle_fl = math.radians(60)
+        self.angle_bl = math.radians(45)
+        self.angle_fr = math.radians(60)
+        self.angle_br = math.radians(45)
 
         # Calibre este valor! Velocidade angular máxima que um motor pode atingir em rad/s para PWM 255.
         self.MAX_ANGULAR_VEL_RAD_S = 20.0 # Exemplo: 20 rad/s (ajuste)
 
         print(f"OmniCalculator inicializado. Raio da Roda: {self.wheel_radius_m:.3f}m, Raio do Robô: {self.robot_radius_m:.3f}m")
 
-    def calculate_wheel_speeds(self, vx, vy, w):
+    def calculate_wheel_speeds(self, vx, vy, w, robot_data):
         """
         Calcula as velocidades PWM e direções para cada roda omnidirecional.
 
@@ -37,52 +37,53 @@ class OmniCalculator:
         Returns:
             dict: Dicionário com velocidades PWM (0-255) e direções (0/1) para cada roda.
         """
-        # O modelo mais comum de cinemática inversa para rodas mecanum/omni é:
-        # V_roda_i = vx * cos(alpha_i) + vy * sin(alpha_i) + L * w
+        if robot_data is None:
+         #Se não houver os dados, retorna velocidade zero
+         return {'v_fl': 0.0, 'v_bl': 0.0, 'v_fr': 0.0, 'v_br': 0.0}
+        
+        Xr = robot_data['robot_current_x']
+        Yr = robot_data['robot_current_y']
+        ThetaR = robot_data['robot_current_orientation']
+        Tx = robot_data['robot_target_x']
+        Ty = robot_data['robot_target_y']
 
-        # Velocidade tangencial de cada roda (m/s)
-        v_fl = (vx * math.cos(self.angle_fl) + vy * math.sin(self.angle_fl) + self.robot_radius_m * w)
-        v_bl = (vx * math.cos(self.angle_bl) + vy * math.sin(self.angle_bl) + self.robot_radius_m * w)
-        v_fr = (vx * math.cos(self.angle_fr) + vy * math.sin(self.angle_fr) + self.robot_radius_m * w)
-        v_br = (vx * math.cos(self.angle_br) + vy * math.sin(self.angle_br) + self.robot_radius_m * w)
-
-        # Converte velocidade tangencial (m/s) para velocidade angular da roda (rad/s)
-        omega_fl = v_fl / self.wheel_radius_m
-        omega_bl = v_bl / self.wheel_radius_m
-        omega_fr = v_fr / self.wheel_radius_m
-        omega_br = v_br / self.wheel_radius_m
+        # Velocidade das rodas calculada pela cinemática omnidirecional
+        v_fl = ((self.robot_radius_m * w)/self.wheel_radius_m) + (vx * ((-math.sin(ThetaR))/2*self.wheel_radius_m) - (529*math.pi*math.cos(ThetaR))/1919*self.wheel_radius_m) + (vy * ((-529*math.pi*math.sin(ThetaR))/1919*self.wheel_radius_m) + (math.cos(ThetaR))/2*self.wheel_radius_m)
+        v_bl = ((self.robot_radius_m * w)/self.wheel_radius_m) + (vx * ((569*math.pi*math.sin(ThetaR))/2528*self.wheel_radius_m) - (569*math.pi*math.cos(ThetaR))/2528*self.wheel_radius_m) + (vy * ((-569*math.pi*math.sin(ThetaR))/2528*self.wheel_radius_m) + (-569*math.pi*math.cos(ThetaR))/2528*self.wheel_radius_m)
+        v_fr = ((self.robot_radius_m * w)/self.wheel_radius_m) + (vx * ((569*math.pi*math.sin(ThetaR))/2528*self.wheel_radius_m) + (569*math.pi*math.cos(ThetaR))/2528*self.wheel_radius_m) + (vy * (( 569*math.pi*math.sin(ThetaR))/2528*self.wheel_radius_m) + (-569*math.pi*math.cos(ThetaR))/2528*self.wheel_radius_m)
+        v_br = ((self.robot_radius_m * w)/self.wheel_radius_m) + (vx * ((-math.sin(ThetaR))/2*self.wheel_radius_m) + (529*math.pi*math.cos(ThetaR))/1919*self.wheel_radius_m) + (vy * ((529*math.pi*math.sin(ThetaR))/1919*self.wheel_radius_m) + (math.cos(ThetaR))/2*self.wheel_radius_m)
 
         # Encontrar a velocidade angular máxima entre todas as rodas para normalização
-        max_abs_omega = max(abs(omega_fl), abs(omega_bl), abs(omega_fr), abs(omega_br))
+        max_abs_omega = max(abs(v_fl), abs(v_bl), abs(v_fr), abs(v_br))
 
         # Normaliza as velocidades se alguma exceder a capacidade máxima do motor
         scale_factor = 1.0
         if max_abs_omega > self.MAX_ANGULAR_VEL_RAD_S:
             scale_factor = self.MAX_ANGULAR_VEL_RAD_S / max_abs_omega
-            omega_fl *= scale_factor
-            omega_bl *= scale_factor
-            omega_fr *= scale_factor
-            omega_br *= scale_factor
+            v_fl *= scale_factor
+            v_bl *= scale_factor
+            v_fr *= scale_factor
+            v_br *= scale_factor
 
         # Converte a velocidade angular (rad/s) para PWM (0-255)
         # Assumindo uma relação linear:
         # (omega_roda / MAX_ANGULAR_VEL_RAD_S) * PWM_MAX
-        pwm_fl = int(abs(omega_fl / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
-        pwm_bl = int(abs(omega_bl / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
-        pwm_fr = int(abs(omega_fr / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
-        pwm_br = int(abs(omega_br / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
+        pwm_fl = int(abs(v_fl / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
+        pwm_bl = int(abs(v_bl / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
+        pwm_fr = int(abs(v_fr / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
+        pwm_br = int(abs(v_br / self.MAX_ANGULAR_VEL_RAD_S * self.max_motor_pwm))
 
         # Determina a direção (0 ou 1).
-        dir_fl = 0 if omega_fl >= 0 else 1 
-        dir_bl = 0 if omega_bl >= 0 else 1
-        dir_fr = 0 if omega_fr >= 0 else 1
-        dir_br = 0 if omega_br >= 0 else 1
+        dir_fl = 0 if v_fl >= 0 else 1 
+        dir_bl = 0 if v_bl >= 0 else 1
+        dir_fr = 0 if v_fr >= 0 else 1
+        dir_br = 0 if v_br >= 0 else 1
 
-        # Garante que os valores PWM estão dentro do limite (0-255)
-        pwm_fl = max(0, min(self.max_motor_pwm, pwm_fl))
-        pwm_bl = max(0, min(self.max_motor_pwm, pwm_bl))
-        pwm_fr = max(0, min(self.max_motor_pwm, pwm_fr))
-        pwm_br = max(0, min(self.max_motor_pwm, pwm_br))
+        # Garante que os valores PWM estão dentro do limite (100,-255)
+        pwm_fl = max(200, min(self.max_motor_pwm, pwm_fl))
+        pwm_bl = max(200, min(self.max_motor_pwm, pwm_bl))
+        pwm_fr = max(200, min(self.max_motor_pwm, pwm_fr))
+        pwm_br = max(200, min(self.max_motor_pwm, pwm_br))
         
         return {
             'fl_speed': pwm_fl, 'fl_direction': dir_fl,

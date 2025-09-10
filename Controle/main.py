@@ -20,10 +20,12 @@ def main():
 
             # 2. If we have data, process it
             if vision_data and vision_data.get('detection'):
-                print ("Vision data received.")
+                #print ("Vision data received.")
                 detection = vision_data['detection']
                 our_robots = detection['robots'].get(TEAM_COLOR, [])
+                #print (our_robots)
                 ball_info = detection['balls'][0] if detection.get('balls') else None
+                #print (ball_info)
 
                 for robot_info in our_robots:
                     # 3. Process each robot's logic
@@ -31,7 +33,7 @@ def main():
                     process_robot_logic(robot_info, ball_info, components)
             else:
                 # If no data, tell all robots to stop
-                print ("No vision data received. Stopping all robots.")
+                #print ("No vision data received. Stopping all robots.")
                 stop_all_robots(components['robot_senders'])
 
             time.sleep(LOOP_SLEEP_S)

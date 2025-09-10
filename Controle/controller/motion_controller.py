@@ -89,7 +89,8 @@ class MotionController:
         error_distance = math.sqrt((target_x - current_x) ** 2 + (target_y - current_y) ** 2)
         
         # Calcular as velocidades lineares (v_linear_x, v_linear_y) do robô
-        v_linear = self.KP * error_distance
+        #v_linear = self.KP * error_distance
+        v_linear = 1.4
 
         # Limitar a velocidade linear ao máximo permitido
         v_linear = max(min(v_linear, self.MAX_V), -self.MAX_V)
@@ -97,8 +98,8 @@ class MotionController:
         omega = max(min(omega, self.MAX_W), -self.MAX_W)
 
         return {
-            'v_linear_x': v_linear * math.cos(current_orientation),
-            'v_linear_y': v_linear * math.sin(current_orientation),
+            'vx': v_linear * math.cos(current_orientation),
+            'vy': v_linear * math.sin(current_orientation),
             'w': omega,
             'kick': kick_command
         }

@@ -12,11 +12,11 @@ LADO_DO_TIME = 1             # 0 -> Esquerdo; 1 -> Direito
 
 "CONFIGURAÇÕES ESPECÍFICAS" 
 IP_ALVIN = "10.74.1.122"
-IP_SIMON = "10.74.1.123"
+IP_SIMON = "192.168.0.100"
 IP_THEODORE = "10.74.1.124"
 
 ID_ALVIN = 6
-ID_SIMON = 2
+ID_SIMON = 3
 ID_THEODORE = 7
 
 FUNCAO_ALVIN = 0             #0 -> Goleiro; 1 -> Meio-Campista; 2 -> Atacante

@@ -56,10 +56,10 @@ struct NetworkConfig {
 };
 
 // --- AVAILABLE NETWORK CONFIGURATIONS ---
-const NetworkConfig LAB_WIFI_CONFIG = { "labmicro", "l@bm!cro2023", 8080 };
+const NetworkConfig LABMICRO_WIFI_CONFIG = { "labmicro", "l@bm!cro2023", 8080 };
 // ...
 // Add a new one? Just add it here! No other files need to change. (Except main.ino to choose which one to use)
-const NetworkConfig MOBILE_HOTSPOT_CONFIG = { "MyPhone", "12345678", 9000 }; // Example
+const NetworkConfig LARSIS_ROBOS_CONFIG = { "LARSIS_ROBOS", "larsis@larsis", 8080 }; // Example
 
 #define WHEEL_DIAMETER_MM       60
 

@@ -52,19 +52,21 @@ def process_robot_logic(robot_info, ball_info, components):
         'robot_current_orientation': robot_info['orientation'],
         'ball_pos': ball_info
     }
-    print (f"Robot {robot_id} State: {robot_state}")
+    #print (f"Robot {robot_id} State: {robot_state}")
 
     # 1 Decide the strategy. What to do?
     # In the moment, this function only says to follow the ball.
     target_data = components['strategy'].decide_action(robot_state, robot_id)
+    #print (f"Target data {target_data}")
 
     # 2. Calculate the velocities to reach the target (vx, vy, w) using a PID controller.
     command_intent = components['motion_controller'].calculate_robot_velocities(target_data)
+    print (f"Command intent {command_intent}")
 
     # 3. Convert (vx, vy, w) to wheel speeds.
     if command_intent:
         wheel_speeds = components['omni_calculator'].calculate_wheel_speeds(
-            command_intent['vx'], command_intent['vy'], command_intent['w']
+            command_intent['vx'], command_intent['vy'], command_intent['w'], target_data
         )
         should_kick = command_intent.get('kick', False)
     else:
@@ -72,6 +74,7 @@ def process_robot_logic(robot_info, ball_info, components):
                         'fl_direction': 0, 'bl_direction': 0, 'fr_direction': 0, 'br_direction': 0}
         should_kick = False
 
+    print (f"Wheel speeds {wheel_speeds}")
     # 4. Send the command to the robot.
     sender = components['robot_senders'].get(robot_id)
     if sender:
