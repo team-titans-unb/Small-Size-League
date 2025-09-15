@@ -24,12 +24,15 @@ void setup() {
 }
 
 void sendToRobot(uint8_t* buffer) {
-
     bool ok = radio.write(buffer, PACKET_SIZE);
-    if (ok) {
-        Serial.println("Sucesso ao enviar!");
+
+    if (!ok) {
+        Serial.println("Falha ao enviar!");
     } else {
-        Serial.println("Falha no envio!!!!!!");
+        Serial.println("\n\n");
+        Serial.println("###################### SUCESSO #########################");
+        Serial.println("###############   >>> ENVIADO COM SUCESSO <<< ##########");
+        Serial.println("\n\n");
     }
 }
 

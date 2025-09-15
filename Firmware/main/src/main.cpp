@@ -7,18 +7,29 @@
 #include <config.h>
 #include <RF24.h>
 
+// --- Configuração dos pinos do NRF24L01 ---
+#define CE_PIN   2
+#define CSN_PIN  5
+#define SCK_PIN  14
+#define MISO_PIN 12
+#define MOSI_PIN 13
+
+// Cria uma instância de SPI no barramento HSPI
+SPIClass spiNRF(HSPI);
+
+// Instância do rádio usando CE e CSN
+RF24 radio(CE_PIN, CSN_PIN);
+
+// Endereço do rádio
+const byte RADIO_ADDRESS[5] = {'R','o','b','o','1'};
+RadioCommunication messenger(radio, RADIO_ADDRESS);
+
+// Identificação do robô
 const RobotID CURRENT_ROBOT = SIMON;
 Robot robot(CURRENT_ROBOT);
 
-#define CE_PIN  2
-#define CSN_PIN 5
-
-RF24 radio(CE_PIN, CSN_PIN);
-const byte RADIO_ADDRESS[5] = {'R','o','b','o','1'}; 
-RadioCommunication messenger(radio, RADIO_ADDRESS);
-
 // --- Estrutura do pacote ---
-struct __attribute__((packed)) CommandPacket {
+struct CommandPacket {
     uint8_t robot_id;
     uint8_t fl_s, fl_d;
     uint8_t bl_s, bl_d;
@@ -34,8 +45,19 @@ unsigned long lastPacketTime = 0;
 
 void setup() {
     Serial.begin(19200);
+
+    // Inicializa SPI nos pinos escolhidos
+    spiNRF.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CSN_PIN);
+
+    // Inicializa rádio usando esse SPI
+    if (!radio.begin(&spiNRF)) {
+        Serial.println("Falha ao iniciar o NRF24L01!");
+        while (1);
+    }
+
     robot.initializeRobot();
     messenger.beginRX();
+
     Serial.println("Robot pronto e aguardando comandos...");
     Serial.print("I am ");
     Serial.println(robot.getId());
@@ -53,24 +75,22 @@ void processPacket(const CommandPacket& pkt) {
     Serial.print("Kicker: "); Serial.println(pkt.kicker);
 
     // Comandos aos motores
-    
     robot.setMotorFL(pkt.fl_s, pkt.fl_d);
     robot.setMotorBL(pkt.bl_s, pkt.bl_d);
     robot.setMotorFR(pkt.fr_s, pkt.fr_d);
     robot.setMotorBR(pkt.br_s, pkt.br_d);
     if (pkt.kicker) robot.kick();
-    
 }
 
 void loop() {
     if (radio.available()) {
         radio.read(&packet, PACKET_SIZE);
 
-        if (packet.robot_id != robot.getId()){
-            Serial.println("Pacote ignorado");
+        if (packet.robot_id != robot.getId()) {
+            Serial.print("Pacote ignorado: ");
+            Serial.println(packet.robot_id);
             return;
-        } 
-        Serial.println("Comando recebido!");
+        }
         processPacket(packet);
     }
 }
