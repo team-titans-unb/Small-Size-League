@@ -1,6 +1,11 @@
 import socket
 
-class UdpSender:
+from Robot_sender import FWD, RobotSender
+
+FWD = 0
+BWD = 1
+
+class UdpSender(RobotSender):
     def __init__(self, robot_ip, robot_port):
         self.robot_ip = robot_ip
         self.robot_port = robot_port
@@ -36,7 +41,7 @@ class UdpSender:
 
 if __name__ == '__main__':
     import time
-    ROBOT_TEST_IP = '192.168.0.100'
+    ROBOT_TEST_IP = '192.168.0.101'
     ROBOT_TEST_PORT = 8080
 
     sender_test = UdpSender(ROBOT_TEST_IP, ROBOT_TEST_PORT)
@@ -45,17 +50,23 @@ if __name__ == '__main__':
 
     try:
         print("\nTeste 1: Mover todas as rodas para frente")
-        sender_test.send_command(250, 0, 250, 0, 250, 0, 250, 0, False)
+        cmd = sender_test.motor_test([1,2,3,4], FWD)
+        sender_test.send_command(*cmd)  # <- aqui desempacota a tupla
+
         time.sleep(10)
         print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
+        cmd = sender_test.motor_test([1,2,3,4], FWD, speed=0)
+        sender_test.send_command(*cmd) 
         time.sleep(2)
 
         print("\nTeste 2: Mover todas as rodas para trás")
-        sender_test.send_command(250, 1, 250, 1, 250, 1, 250, 1, False)
+        cmd = sender_test.motor_test([1,2,3,4], BWD)
+        sender_test.send_command(*cmd)  # <- aqui desempacota a tupla
         time.sleep(10)
+
         print("\nDesativando todas as rodas")
-        sender_test.send_command(0, 0, 0, 0, 0, 0, 0, 0, False)
+        cmd = sender_test.motor_test([1,2,3,4], FWD, speed=0)
+        sender_test.send_command(*cmd)
         time.sleep(2)
     except KeyboardInterrupt:
         print("\nTeste interrompido pelo usuário.")
