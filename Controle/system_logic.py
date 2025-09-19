@@ -40,7 +40,7 @@ def initialize_system():
 
 def process_robot_logic(robot_info, ball_info, components):
     """
-    Calculates and sends commands for a single robot.
+    Calculates and sends commands for a single robo695Mit.
     """
     robot_id = robot_info.get('robot_id')
     if robot_id not in ROBOT_CONFIGS:
@@ -61,7 +61,7 @@ def process_robot_logic(robot_info, ball_info, components):
 
     # 2. Calculate the velocities to reach the target (vx, vy, w) using a PID controller.
     command_intent = components['motion_controller'].calculate_robot_velocities(target_data)
-    print (f"Command intent {command_intent}")
+    ######print (f"Command intent {command_intent}")
 
     # 3. Convert (vx, vy, w) to wheel speeds.
     if command_intent:
@@ -74,7 +74,7 @@ def process_robot_logic(robot_info, ball_info, components):
                         'fl_direction': 0, 'bl_direction': 0, 'fr_direction': 0, 'br_direction': 0}
         should_kick = False
 
-    print (f"Wheel speeds {wheel_speeds}")
+    ######print (f"Wheel speeds {wheel_speeds}")
     # 4. Send the command to the robot.
     sender = components['robot_senders'].get(robot_id)
     if sender:

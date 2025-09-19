@@ -33,10 +33,10 @@ const RobotConfig ALVIN_CONFIG = {
 
 // PINS FOR SIMON
 const RobotConfig SIMON_CONFIG = {
-    .frontLeft  = {26, 25, 0, 1}, // {IN1, IN2, CHAN1, CHAN2}
-    .backLeft   = {21, 19, 2, 3},
-    .frontRight = {32, 33, 4, 5},
-    .backRight  = {4, 18, 6, 7},
+    .frontLeft  = {4, 18, 6, 7},    // Era backLeft (posição física 2)
+    .backLeft   = {26, 25, 0, 1},   // Era frontRight (posição física 3)
+    .frontRight = {21, 19, 2, 3},   // Era backRight (posição física 4)
+    .backRight  = {32, 33, 4, 5},   // Era frontLeft (posição física 1)
     .kickerPin  = 27
 };
 

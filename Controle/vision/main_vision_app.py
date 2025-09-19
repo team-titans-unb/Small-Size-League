@@ -1,3 +1,4 @@
+import time
 from client import VisionClient
 from data_receiver import VisionDataReceiver
 
