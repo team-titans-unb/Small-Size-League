@@ -3,78 +3,88 @@
 #include <communication.h>
 #include <network_protocol.h>
 #include <robot_controller.h>
-#include <RadioCommunication.h>
 #include <config.h>
-#include <RF24.h>
 
-const RobotID CURRENT_ROBOT = SIMON;
+// --- Configuration Section ---
+const RobotID CURRENT_ROBOT = SIMON; // Change to ALVIN, SIMON, or THEODORE
 Robot robot(CURRENT_ROBOT);
 
-// NRF24
-RF24 radio(2, 5);
-const byte RADIO_ADDRESS[6] = "Robo"; 
-RadioCommunication messenger(radio, RADIO_ADDRESS);
-
-// --- Estrutura do pacote ---
-struct CommandPacket {
-    uint8_t robot_id;
-    uint8_t fl_s, fl_d;
-    uint8_t bl_s, bl_d;
-    uint8_t fr_s, fr_d;
-    uint8_t br_s, br_d;
-    uint8_t kicker;
-};
-
-const size_t PACKET_SIZE = sizeof(CommandPacket);
-CommandPacket packet;
+Communication messenger(LARSIS_ROBOS_CONFIG);
+// --- End Configuration Section ---
 
 unsigned long lastPacketTime = 0;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(19200);
     robot.initializeRobot();
     messenger.begin();
-    Serial.println("Robot pronto e aguardando comandos...");
+    Serial.println("Robot ready and waiting for commands...");
 }
 
-// Função para processar o pacote de forma segura
-void processPacket(const CommandPacket& pkt) {
-    if (pkt.robot_id != CURRENT_ROBOT) return;
+/**
+ * Main loop function
+ * 
+ * - Continuously checks for incoming message packets.
+ * - If a packet is received, updates the timestamp and dispatches the packet to the robot controller.
+ * - If no packet is received for more than 500 milliseconds, stops all robot motors as a safety measure.
+ */
 
-    lastPacketTime = millis();
+ 
+void loop() {
+    MessagePacket packet;
+    if (messenger.receivePacket(packet)) {
+        Serial.println("Comando Front Left:");
+    Serial.print("  SetPoint: ");
+    Serial.println(packet.frontLeft.setPoint);
+    Serial.print("  Direction: ");
+    Serial.println(packet.frontLeft.direction);
 
-    // Debug resumido
-    Serial.print("Pacote recebido p/ Robo "); Serial.println(pkt.robot_id);
-    Serial.print("FL: "); Serial.print(pkt.fl_s); Serial.print(" dir="); Serial.print(pkt.fl_d);
-    Serial.print(" | BL: "); Serial.print(pkt.bl_s); Serial.print(" dir="); Serial.print(pkt.bl_d);
-    Serial.print(" | FR: "); Serial.print(pkt.fr_s); Serial.print(" dir="); Serial.print(pkt.fr_d);
-    Serial.print(" | BR: "); Serial.print(pkt.br_s); Serial.print(" dir="); Serial.println(pkt.br_d);
-    Serial.print("Kicker: "); Serial.println(pkt.kicker);
+    Serial.println("Comando Front Right:");
+    Serial.print("  SetPoint: ");
+    Serial.println(packet.frontRight.setPoint);
+    Serial.print("  Direction: ");
+    Serial.println(packet.frontRight.direction);
 
-    // Comandos aos motores (descomentar quando estiver pronto)
-    /*
-    robot.setMotorSpeed(FRONT_LEFT,  pkt.fl_s, pkt.fl_d);
-    robot.setMotorSpeed(BACK_LEFT,   pkt.bl_s, pkt.bl_d);
-    robot.setMotorSpeed(FRONT_RIGHT, pkt.fr_s, pkt.fr_d);
-    robot.setMotorSpeed(BACK_RIGHT,  pkt.br_s, pkt.br_d);
-    if (pkt.kicker) robot.kick();
-    */
+    Serial.println("Comando Back Left:");
+    Serial.print("  SetPoint: ");
+    Serial.println(packet.backLeft.setPoint);
+    Serial.print("  Direction: ");
+    Serial.println(packet.backLeft.direction);
+
+    Serial.println("Comando Back Right:");
+    Serial.print("  SetPoint: ");
+    Serial.println(packet.backRight.setPoint);
+    Serial.print("  Direction: ");
+    Serial.println(packet.backRight.direction);
+
+    // Imprimir o comando do kicker
+    Serial.print("Comando Kicker: ");
+    Serial.println(packet.kickerCommand);
+        lastPacketTime = millis();
+        handlePacket(robot, packet);
+    }
+    if (millis() - lastPacketTime > 500) {
+        robot.stopAllMotors();
+    }
+}
+
+/*
+#include <Arduino.h>
+#include "motor.h"
+
+Motor motor(16, 17, 0, 1); // GPIO16 → canal 0, GPIO17 → canal 1
+
+void setup() {
+    Serial.begin(19200);
+    motor.begin();
+    motor.move(200, 0); // sentido 0 com velocidade 200
 }
 
 void loop() {
-    // Recebe pacote do rádio
-    if (messenger.receivePacket((uint8_t*)&packet, PACKET_SIZE)) {
-
-        // Verifica se o pacote é para este robô
-        if (packet.robot_id != 2) {
-            Serial.println("Pacote fora de sincronia, ignorando...");
-            return;
-        }
-        processPacket(packet);
-    }
-
-    // Failsafe: se passar 500ms sem pacote, parar os motores
-    if (millis() - lastPacketTime > 500) {
-        // robot.stopAllMotors(); // descomentar quando estiver pronto
-    }
+    delay(2000);
+    motor.move(200, 1); // muda direção
+    delay(2000);
+    motor.stop();
+    delay(2000);
 }
+*/
