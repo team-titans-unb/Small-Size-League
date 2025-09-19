@@ -1,3 +1,4 @@
+from Controle.sender.radio_sender import RadioSender
 from vision.client import VisionClient
 from vision.data_receiver import VisionDataReceiver
 from strategy import Strategy
@@ -7,6 +8,16 @@ from sender.udp_sender import UdpSender
 import config
 
 from constants import VISION_IP, VISION_PORT, ROBOT_CONFIGS
+
+# Select the communication method
+USE_RADIO = False  # escolha aqui: True = Radio, False = UDP
+PORT="ttyACM0"
+
+def create_sender(robot_id, cfg):
+    if USE_RADIO:
+        return RadioSender(port=PORT, robot_id=robot_id)
+    else:
+        return UdpSender(robot_ip=cfg['ip'], robot_port=cfg['port'])
 
 def initialize_system():
     """
@@ -20,11 +31,12 @@ def initialize_system():
         return None
     vision_receiver = VisionDataReceiver(vision_client)
     print(f"Connected to Vision at {VISION_IP}:{VISION_PORT}")
-
+    
     robot_senders = {}
     for robot_id, cfg in ROBOT_CONFIGS.items():
-        robot_senders[robot_id] = UdpSender(robot_ip=cfg['ip'], robot_port=cfg['port'])
-        print(f"Sender for Robot {robot_id} configured for {cfg['ip']}:{cfg['port']}")
+        sender = create_sender(robot_id, cfg)
+        robot_senders[robot_id] = sender
+        print(f"Sender for Robot {robot_id} -> {sender.__class__.__name__}")
 
     return {
         'vision_client': vision_client,

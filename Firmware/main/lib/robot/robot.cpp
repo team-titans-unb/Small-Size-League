@@ -5,6 +5,7 @@ Robot::Robot(RobotID id) : Robot( (id == ALVIN) ? ALVIN_CONFIG :
                                   (id == SIMON) ? SIMON_CONFIG :
                                                 THEODORE_CONFIG )
 {
+    this->id = id;
     Serial.printf("Initializing with config for Robot ID: %d\n", id);
 }
 
@@ -59,4 +60,8 @@ void Robot::stopAllMotors() {
     motorFR.stop();
     motorBR.stop();
     //Serial.println("All motors stopped.");
+}
+
+int Robot::getId() {
+    return static_cast<int>(this->id);
 }

@@ -19,13 +19,15 @@ public:
     void kick();
     void stopAllMotors();
 
+    int getId();
 private:
     explicit Robot(const RobotConfig& config);
     Motor motorFL;
     Motor motorBL;
     Motor motorFR;
     Motor motorBR;
-
+    
+    int id;
     uint8_t _kickerPin;
 };
 
