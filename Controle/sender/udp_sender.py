@@ -39,6 +39,10 @@ class UdpSender(RobotSender):
         except Exception as e:
             print(f"Erro ao enviar pacote UDP para {self.robot_ip}:{self.robot_port}: {e}")
 
+    def send_packet(self, packet: bytearray):
+        raise NotImplementedError
+
+
 if __name__ == '__main__':
     import time
     ROBOT_TEST_IP = '192.168.0.101'
