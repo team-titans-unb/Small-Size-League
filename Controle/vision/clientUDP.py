@@ -33,6 +33,7 @@ class UDPClient:
                 data, _ = self.sock.recvfrom(2048)
                 with self._lock:
                     self.data = data
+                self.logger.info(f"Received {len(data)} bytes from {self.ip}:{self.port}")
             except Exception as e:
                 self.logger.error(f"Error receiving data: {e}")
 

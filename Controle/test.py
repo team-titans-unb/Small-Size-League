@@ -1,5 +1,6 @@
 from vision.clientUDP import UDPClient
 from vision.parser import VisionDataParser
+from vision.gcparser import GCDataParser
 import socket
 import threading
 
@@ -64,10 +65,31 @@ def test_Vision_Detections_Tracker():
             else:
                 print("Fail to connect.")
 
+def test_GC_Referee():
+    GC_IP = '224.5.23.1'
+    GC_PORT = 10003
+
+    gc = UDPClient(GC_IP, GC_PORT, 'gc_referee')
+    gc_thread = threading.Thread(target=gc.run)
+    gc_thread.start()
+    gc_parser = GCDataParser()
+
+    while True:
+        print("Last GC Data:")
+        data = gc.get_last_data()
+        if data:
+            gc_parser.parser_loop(data)
+        gc_data = gc_parser.get_last_data()
+        if gc_data:
+            command = gc_data.get('command')
+            print(command)
+            print("-----")
+        pass
+
 if __name__ == '__main__':
     # ----------- FUNCIONANDO -----------
-    print("Testing Vision Detections on port 10006")
-    test_Vision_Detections()
+    # print("Testing Vision Detections on port 10006")
+    # test_Vision_Detections()
 
     # ----------- FUNCIONANDO -----------
     # print("Testing Vision Detections Legacy on port 10005")
@@ -76,3 +98,7 @@ if __name__ == '__main__':
     # --------- NÃO FUNCIONANDO ---------
     # print("Testing Vision Detections Tracker on port 10010")
     # test_Vision_Detections_Tracker()
+
+    # ----------- FUNCIONANDO -----------
+    print("Testing GC Referee on port 10003")
+    test_GC_Referee()
