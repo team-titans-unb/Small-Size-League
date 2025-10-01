@@ -22,8 +22,8 @@ class VisionDataParser:
 
             if frame.detection:
                 with self._lock:
-                                detection = frame.detection
-                                self.last_detection_data = MessageToDict(detection, preserving_proto_field_name=True)
+                    detection = frame.detection
+                    self.last_detection_data = MessageToDict(detection, preserving_proto_field_name=True)
 
             if frame.geometry:
                 with self._lock:
