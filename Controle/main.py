@@ -16,7 +16,12 @@ def main():
     try:
         while True:
             # 1. Get the latest data from the vision system
-            vision_data = components['vision_receiver'].receive_data()
+            vision_data = components['vision_parser'].get_last_data()
+
+            ## ---------------------
+            ## GET GC DATA (do nothing for now)
+            gc_data = components['gc_parser'].get_last_data()
+            ## ---------------------
 
             # 2. If we have data, process it
             if vision_data and vision_data.get('detection'):
