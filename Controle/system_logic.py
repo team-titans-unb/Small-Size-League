@@ -1,4 +1,4 @@
-from Controle.sender.radio_sender import RadioSender
+from sender.radio_sender import RadioSender
 from vision.client import VisionClient
 from vision.data_receiver import VisionDataReceiver
 from strategy import Strategy
@@ -11,11 +11,10 @@ from constants import VISION_IP, VISION_PORT, ROBOT_CONFIGS
 
 # Select the communication method
 USE_RADIO = False  # escolha aqui: True = Radio, False = UDP
-PORT="dev/ttyACM0"
 
 def create_sender(robot_id, cfg):
     if USE_RADIO:
-        return RadioSender(port=PORT, robot_id=robot_id)
+        return RadioSender(robot_id=robot_id)
     else:
         return UdpSender(robot_ip=cfg['ip'], robot_port=cfg['port'])
 

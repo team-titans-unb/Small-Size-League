@@ -1,3 +1,4 @@
+import time
 from more_itertools import tail
 import serial
 
@@ -11,7 +12,7 @@ class RadioSender():
         self.packet_size = 10
         self.serial = serial.Serial(port, baudrate, timeout=1)
 
-    def build_packet(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
+    def build_packet(self, m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker):
         
         # Headers
         packet = bytearray([0xAA, 0x55])
@@ -19,17 +20,17 @@ class RadioSender():
         packet.append(self.robot_id)
         
         # Validate motor speeds and directions
-        fl_s = max(0, min(255, int(fl_s)))
-        fl_d = 1 if fl_d else 0
-        bl_s = max(0, min(255, int(bl_s)))
-        bl_d = 1 if bl_d else 0
-        fr_s = max(0, min(255, int(fr_s)))
-        fr_d = 1 if fr_d else 0
-        br_s = max(0, min(255, int(br_s)))
-        br_d = 1 if br_d else 0
+        m1 = max(0, min(255, int(m1)))
+        m1_dir = 1 if m1_dir else 0
+        m2 = max(0, min(255, int(m2)))
+        m2_dir = 1 if m2_dir else 0
+        m3 = max(0, min(255, int(m3)))
+        m3_dir = 1 if m3_dir else 0
+        m4 = max(0, min(255, int(m4)))
+        m4_dir = 1 if m4_dir else 0
         kicker = 1 if kicker else 0
 
-        data = [fl_s, fl_d, fr_s, fr_d, bl_s, bl_d, br_s, br_d, kicker]
+        data = [m1, m1_dir, m3, m3_dir, m2, m2_dir, m4, m4_dir, kicker]
         for value in data:
             packet.append(value)
     
@@ -39,8 +40,8 @@ class RadioSender():
         packet.append(tail)
         return packet
 
-    def send_command(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
-        packet = self.build_packet(fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker)
+    def send_command(self, m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker):
+        packet = self.build_packet(m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker)
         self.send_packet(packet)
 
     def send_packet(self, packet: bytearray):
@@ -59,8 +60,8 @@ class RadioSender():
         cmd = [0,0,0,0,0,0,0,0,kicker]
         motor_map = {
             "fl": (0,1), 1: (0,1),
-            "bl": (2,3), 3: (2,3),
-            "fr": (4,5), 2: (4,5),
+            "fr": (2,3), 3: (2,3),
+            "bl": (4,5), 2: (4,5),
             "br": (6,7), 4: (6,7)
         }
         if not isinstance(motors, list):
@@ -72,12 +73,14 @@ class RadioSender():
             cmd[idx_speed] = speed
             cmd[idx_dir] = direction
         return tuple(cmd)
+    
 
 if __name__ == "__main__":
     sender = RadioSender()
     try:
         while True:
-            cmd = sender.motor_test([1,2,3,4], direction=FWD, speed=200)
-            sender.send_command(*cmd)
+                cmd = sender.motor_test([4], direction=FWD, speed=200)
+                sender.send_command(*cmd)
+
     except KeyboardInterrupt:
         print("Encerrando...")

@@ -1,6 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+const uint8_t HEADER[2] = {0xAA, 0x55};
+const uint8_t TAIL = 0xFF;
+
 struct MotorPins {
     int in1_pin;
     int in2_pin;
@@ -8,18 +11,27 @@ struct MotorPins {
     int channel2;
 };
 
+struct RadioPins {
+    uint8_t ce_pin;
+    uint8_t csn_pin;
+    uint8_t sck_pin;
+    uint8_t miso_pin;
+    uint8_t mosi_pin;
+};
+
 struct RobotConfig {
     MotorPins frontLeft;
     MotorPins backLeft;
     MotorPins frontRight;
     MotorPins backRight;
-    int kickerPin;
+    uint8_t kickerPin;
+    RadioPins radioPins;
 };
 
 enum RobotID {
-    ALVIN,
-    SIMON,
-    THEODORE
+    ALVIN = 6 ,
+    SIMON = 3 ,
+    THEODORE = 7
 };
 
 // PINS FOR ALVIN
@@ -28,7 +40,8 @@ const RobotConfig ALVIN_CONFIG = {
     .backLeft   = {21, 19, 2, 3},
     .frontRight = {32, 33, 4, 5},
     .backRight  = {4, 18, 6, 7},
-    .kickerPin  = 27
+    .kickerPin  = 27,
+    .radioPins = {2, 5, 14, 12, 13} // {CE, CSN, SCK, MISO, MOSI}
 };
 
 // PINS FOR SIMON
@@ -37,7 +50,9 @@ const RobotConfig SIMON_CONFIG = {
     .backLeft   = {26, 25, 0, 1},   // Era frontRight (posição física 3)
     .frontRight = {21, 19, 2, 3},   // Era backRight (posição física 4)
     .backRight  = {32, 33, 4, 5},   // Era frontLeft (posição física 1)
-    .kickerPin  = 27
+    .kickerPin  = 27,
+    .radioPins = {2, 5, 14, 12, 13} // {CE, CSN, SCK, MISO, MOSI}
+
 };
 
 // PINS FOR THEODORE
@@ -46,7 +61,9 @@ const RobotConfig THEODORE_CONFIG = {
     .backLeft   = {21, 19, 2, 3},
     .frontRight = {32, 33, 4, 5},
     .backRight  = {4, 18, 6, 7},
-    .kickerPin  = 27
+    .kickerPin  = 27,
+    .radioPins = {2, 5, 14, 12, 13} // {CE, CSN, SCK, MISO, MOSI}
+
 };
 
 struct NetworkConfig {
