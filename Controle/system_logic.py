@@ -10,7 +10,7 @@ import config
 from constants import VISION_IP, VISION_PORT, ROBOT_CONFIGS
 
 # Select the communication method
-USE_RADIO = False  # escolha aqui: True = Radio, False = UDP
+USE_RADIO = True  # escolha aqui: True = Radio, False = UDP
 
 def create_sender(robot_id, cfg):
     if USE_RADIO:
