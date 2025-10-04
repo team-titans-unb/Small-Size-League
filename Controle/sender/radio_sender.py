@@ -79,7 +79,7 @@ if __name__ == "__main__":
     sender = RadioSender()
     try:
         while True:
-                cmd = sender.motor_test([4], direction=FWD, speed=200)
+                cmd = sender.motor_test([1,2,3,4], direction=FWD, speed=200, kicker=True)
                 sender.send_command(*cmd)
 
     except KeyboardInterrupt:

@@ -24,7 +24,7 @@ CommandPacket packet;
 unsigned long lastPacketTime = 0;
 const unsigned long PACKET_TIMEOUT = 200; // milliseconds
 
-void processPakcet(CommandPacket& pkt);
+void processPacket(CommandPacket& pkt);
 bool verifyChecksum(CommandPacket& pkt);
 
 void setup() {
@@ -35,41 +35,31 @@ void setup() {
         robot_pin.radioPins.miso_pin, 
         robot_pin.radioPins.mosi_pin, 
         robot_pin.radioPins.csn_pin);
-    // Inicializa rádio usando esse SPI
     if (!radio.begin(&spiNRF)) {
         Serial.println("Falha ao iniciar o NRF24L01!");
-    }
-    else {
+    } else {
         Serial.println("NRF24L01 iniciado com sucesso.");
     }
 
-    // Configurações básicas
     radio.setChannel(CHANNEL);
     radio.setDataRate(DATARATE);
-    radio.setPALevel(POWER, true);      // força override
-    radio.setRetries(5, 15);            // habilita retransmissões
-    radio.setAutoAck(true);
-    radio.enableAckPayload();
-    radio.enableDynamicPayloads();
-
-    // Mesmo endereço para RX e TX
-    radio.openReadingPipe(1, RADIO_ADDRESS);
-    radio.openWritingPipe(RADIO_ADDRESS);    // garante simetria
-
-    radio.startListening();
+    radio.setPALevel(POWER);           
+    radio.setAutoAck(true);            
+    radio.enableDynamicPayloads();     
+    radio.openReadingPipe(1, RADIO_ADDRESS); 
+    radio.startListening();             
 
     Serial.println("Radio pronto para receber pacotes.");
 
     robot.initializeRobot();
     Serial.println("Robot pronto e aguardando comandos...");
-    Serial.print("I am ");''
+    Serial.print("I am ");
     Serial.println(robot.getId());
 }
 
 void loop() {
     
     if (radio.available()) {
-        Serial.println("Dados disponíveis no rádio.");
         radio.read(&packet, sizeof(packet));
 
         processPacket(packet);
@@ -86,66 +76,29 @@ void loop() {
 }
 
 void processPacket(CommandPacket& pkt) {
-    if (pkt.header1 != HEADER[0] || pkt.header2 != HEADER[1]) {
-        Serial.println("Invalid packet header.");
-        return; 
-    }
-    if (pkt.robot_id != robot.getId()) {
-        Serial.print("Packet not for me. ID: ");
-        Serial.println(pkt.robot_id);
-        return; 
-    }
-    if (pkt.tail != TAIL) {
-        Serial.println("Invalid packet tail.");
-        return;
-    }
-    if (!verifyChecksum(pkt)) {
-        Serial.println("Invalid checksum.");
-        return;
-    }
-    #ifdef DEBUG
-    Serial.print("Header 1: "); Serial.println(pkt.header1);
-    Serial.print("Header 2: "); Serial.println(pkt.header2);
-    Serial.print("Robot ID: "); Serial.println(pkt.robot_id);
-    Serial.print("FL Speed: "); Serial.println(pkt.m1_speed);
-    Serial.print("FL Dir: "); Serial.println(pkt.m1_dir);
-
-    Serial.print("FR Speed: "); Serial.println(pkt.m2_speed);
-    Serial.print("FR Dir: "); Serial.println(pkt.m2_dir);
-
-    Serial.print("BL Speed: "); Serial.println(pkt.m3_speed);
-    Serial.print("BL Dir: "); Serial.println(pkt.m3_dir);
-
-    Serial.print("BR Speed: "); Serial.println(pkt.m4_speed);
-    Serial.print("BR Dir: "); Serial.println(pkt.m4_dir);
-
-    Serial.print("Kicker: "); Serial.println(pkt.kicker);
-    Serial.print("Checksum: "); Serial.println(pkt.checksum);
-    Serial.print("Tail: "); Serial.println(pkt.tail);
-    #endif
+    if (pkt.header1 != HEADER[0] || pkt.header2 != HEADER[1]) return;
+    if (pkt.tail != TAIL) return;
+    if (pkt.robot_id != robot.getId())return;
+    if (!verifyChecksum(pkt)) return;
+ 
+    Serial.println("Checksum válido");
+    Serial.println("Pacote recebido:");
     // comandos aos motores
     robot.setMotorFL(pkt.m1_speed, pkt.m1_dir);
     robot.setMotorFR(pkt.m2_speed, pkt.m2_dir);
     robot.setMotorBL(pkt.m3_speed, pkt.m3_dir);
     robot.setMotorBR(pkt.m4_speed, pkt.m4_dir);
 
-
-    if (pkt.kicker) {
-        robot.kick();
-    }
+    if (pkt.kicker) robot.kick();
 }
-bool verifyChecksum(const CommandPacket& pkt) {
+
+bool verifyChecksum(CommandPacket& pkt) {
     uint8_t sum = 0;
 
-    sum += pkt.robot_id;
-    sum += pkt.m1_speed;
-    sum += pkt.m1_dir;
-    sum += pkt.m2_speed;
-    sum += pkt.m2_dir;
-    sum += pkt.m3_speed;
-    sum += pkt.m3_dir;
-    sum += pkt.m4_speed;
-    sum += pkt.m4_dir;
+    sum += pkt.m1_speed; sum += pkt.m1_dir;
+    sum += pkt.m2_speed; sum += pkt.m2_dir;
+    sum += pkt.m3_speed; sum += pkt.m3_dir;
+    sum += pkt.m4_speed; sum += pkt.m4_dir;
     sum += pkt.kicker;
 
     // compara com checksum recebido
