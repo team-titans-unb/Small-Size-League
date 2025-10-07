@@ -1,5 +1,4 @@
 import time
-from more_itertools import tail
 import serial
 
 FWD = 0
@@ -30,7 +29,7 @@ class RadioSender():
         m4_dir = 1 if m4_dir else 0
         kicker = 1 if kicker else 0
 
-        data = [m1, m1_dir, m3, m3_dir, m2, m2_dir, m4, m4_dir, kicker]
+        data = [m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker]
         for value in data:
             packet.append(value)
     
@@ -77,10 +76,24 @@ class RadioSender():
 
 if __name__ == "__main__":
     sender = RadioSender()
-    try:
-        while True:
-                cmd = sender.motor_test([1,2,3,4], direction=FWD, speed=200, kicker=True)
-                sender.send_command(*cmd)
+    robot_id = 3
+    sender = RadioSender(robot_id=robot_id)
 
-    except KeyboardInterrupt:
-        print("Encerrando...")
+    # Comandos individuais (m1 = FL, m2 = FR, m3 = BL, m4 = BR)
+    m1 = [200, 0, 0, 0, 0, 0, 0, 0, False]  # FL
+    m2 = [0, 0, 200, 0, 0, 0, 0, 0, False]  # FR
+    m3 = [0, 0, 0, 0, 200, 0, 0, 0, False]  # BL
+    m4 = [0, 0, 0, 0, 0, 0, 200, 0, False]  # BR
+
+    # Comando para todos os motores juntos
+    all_motors = [150, 0, 150, 0, 150, 0, 150, 0, False]
+
+    # Intervalo entre comandos (em segundos)
+    delay = 2.0
+
+    print("Iniciando teste contínuo dos motores... (Ctrl+C para parar)")
+
+    while True:
+        test = sender.motor_test([1], FWD)
+        print(f"Enviando comando para motor FL: {test}")
+        sender.send_command(*test)
