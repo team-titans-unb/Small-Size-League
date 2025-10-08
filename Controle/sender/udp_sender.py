@@ -1,6 +1,6 @@
 import socket
 
-from Robot_sender import FWD, RobotSender
+from sender.Robot_sender import FWD, RobotSender
 
 FWD = 0
 BWD = 1

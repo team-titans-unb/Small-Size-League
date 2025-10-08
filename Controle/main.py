@@ -1,3 +1,5 @@
+from calendar import c
+from itertools import count
 import time
 from constants import TEAM_COLOR, LOOP_SLEEP_S
 from system_logic import initialize_system, process_robot_logic, stop_all_robots
@@ -15,6 +17,7 @@ def main():
 
     try:
         while True:
+
             # 1. Get the latest data from the vision system
             vision_data = components['vision_receiver'].receive_data()
 
@@ -36,7 +39,7 @@ def main():
                 #print ("No vision data received. Stopping all robots.")
                 stop_all_robots(components['robot_senders'])
 
-            time.sleep(LOOP_SLEEP_S)
+            time.sleep(0.01)
 
     except KeyboardInterrupt:
         print("\nProgram interrupted by user.")

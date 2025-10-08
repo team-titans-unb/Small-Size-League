@@ -41,6 +41,7 @@ class RadioSender():
 
     def send_command(self, m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker):
         packet = self.build_packet(m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker)
+        print(list(packet))
         self.send_packet(packet)
 
     def send_packet(self, packet: bytearray):
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     m4 = [0, 0, 0, 0, 0, 0, 200, 0, False]  # BR
 
     # Comando para todos os motores juntos
-    all_motors = [150, 0, 150, 0, 150, 0, 150, 0, False]
+    all_motors = [250, 0, 250, 0, 250, 0, 250, 0, False]
 
     # Intervalo entre comandos (em segundos)
     delay = 2.0
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     print("Iniciando teste contínuo dos motores... (Ctrl+C para parar)")
 
     while True:
-        test = sender.motor_test([1], FWD)
-        print(f"Enviando comando para motor FL: {test}")
-        sender.send_command(*test)
+
+        cmd = sender.motor_test([1,2,3,4], direction=BWD)
+        sender.send_command(*cmd)
+    
