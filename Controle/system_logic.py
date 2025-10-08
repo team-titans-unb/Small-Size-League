@@ -69,8 +69,6 @@ def process_robot_logic(robot_info, ball_info, components):
             wheel_speeds['br_speed'], wheel_speeds['br_direction'],
             should_kick
         )
-
-        time.sleep(0.1)  # Pequena pausa para evitar sobrecarga
     
 def stop_all_robots(robot_senders):
     for sender in robot_senders.values():
