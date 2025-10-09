@@ -1,6 +1,6 @@
 import socket
 
-from Robot_sender import FWD, RobotSender
+from sender.Robot_sender import FWD, RobotSender
 
 FWD = 0
 BWD = 1
@@ -15,29 +15,16 @@ class UdpSender(RobotSender):
         print(f"UdpSender configurado para enviar para {self.robot_ip}:{self.robot_port}")
 
     def send_command(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
-        fl_s = max(0, min(255, int(fl_s)))
-        fl_d = max(0, min(1, int(fl_d)))
-        bl_s = max(0, min(255, int(bl_s)))
-        bl_d = max(0, min(1, int(bl_d)))
-        fr_s = max(0, min(255, int(fr_s)))
-        fr_d = max(0, min(1, int(fr_d)))
-        br_s = max(0, min(255, int(br_s)))
-        br_d = max(0, min(1, int(br_d)))
-        kicker_byte = 1 if kicker else 0
+        packet = self.build_packet(fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker)
+        self.send_packet(packet)
 
-        packet = bytearray([
-            fl_s, fl_d,
-            fr_s, fr_d,
-            bl_s, bl_d,
-            br_s, br_d,
-            kicker_byte
-        ])
-
+    def send_packet(self, packet: bytearray):
         try:
             self.sock.sendto(packet, (self.robot_ip, self.robot_port))
             print(f"Pacote enviado para {self.robot_ip}:{self.robot_port}: {packet.hex()}")
         except Exception as e:
             print(f"Erro ao enviar pacote UDP para {self.robot_ip}:{self.robot_port}: {e}")
+
 
 if __name__ == '__main__':
     import time

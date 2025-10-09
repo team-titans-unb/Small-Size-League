@@ -1,104 +1,70 @@
-from vision.clientUDP import UDPClient
-from vision.parser import VisionDataParser
-from vision.gcparser import GCDataParser
-import socket
-import threading
+# teste_reto.py
+import time
+import math
+from controller.pid import OmniCalculator # Importa sua classe
+from sender.radio_sender import RadioSender   # Importa sua classe
 
-def test_Vision_Detections():
-    VISION_IP = '224.5.23.2'
-    VISION_PORT = 10006
+# --- CONFIGURAÇÕES DO TESTE ---
+# Vamos simular que a bola está 1 metro (1000mm) à frente do robô
+POSICAO_BOLA_FALSA = {'x': -1000, 'y':-1000}
 
-    vision = UDPClient(VISION_IP, VISION_PORT, 'vision')
-    vision_thread = threading.Thread(target=vision.run)
-    vision_thread.start()
-    vision_parser = VisionDataParser()
+# ID do robô e porta do rádio
+ROBOT_ID_TESTE = 3
+RADIO_PORT = "/dev/ttyACM0" # Verifique se esta é a porta correta
+# ---------------------------------
 
-    while True:
-        print("Lastar Detections:")
-        data = vision.get_last_data()
-        if data:
-            vision_parser.parser_loop(data)
-        detection = vision_parser.get_last_detection()
-        if detection:
-            print(f"Frame Number: {detection.get('frame_number')}")
-            print(f"Balls: {detection.get('balls')}")
-            print(f"Robots Yellow: {detection.get('robots_yellow')}")
-            print(f"Robots Blue: {detection.get('robots_blue')}")
-            print("-----")
-        pass
+def main():
+    print("--- INICIANDO TESTE DE MOVIMENTO RETO ---")
+    
+    # 1. Inicializa os componentes necessários
+    try:
+        sender = RadioSender(robot_id=ROBOT_ID_TESTE, port=RADIO_PORT)
+        omni_calc = OmniCalculator(wheel_radius_mm=30, robot_radius_mm=75)
+        print("Componentes inicializados. O robô deve começar a se mover.")
+    except Exception as e:
+        print(f"ERRO: Não foi possível inicializar os componentes. Verifique a porta do rádio.")
+        print(f"Detalhe: {e}")
+        return
 
-def test_Vision_Detections_Legacy():
-    VISION_IP = '224.5.23.2'
-    VISION_PORT = 10005
+    # Loop de controle
+    try:
+        while True:
+            # 2. Simula os dados da visão
+            # O robô está "parado" na origem (0,0) e olhando para frente (ângulo 0)
+            # O alvo é a bola falsa, 1m à frente
+            robot_data = {
+                'robot_current_x': 0,
+                'robot_current_y': 0,
+                'robot_current_orientation': 0,
+                'robot_target_x': POSICAO_BOLA_FALSA['x'],
+                'robot_target_y': POSICAO_BOLA_FALSA['y'],
+                # O ângulo alvo também é para frente (0 graus)
+                'robot_target_orientation': math.atan2(POSICAO_BOLA_FALSA['y'], POSICAO_BOLA_FALSA['x'])
+            }
 
-    while True:
-        with UDPSocket(VISION_IP, VISION_PORT, 'vision_legacy_client') as vision_legacy_client:
-            if vision_legacy_client.connect():
-                sock = vision_legacy_client.get_socket()
-                try:
-                    data, addr = sock.recvfrom(2048)  # Buffer size is 2048 bytes
-                    if data:
-                        print(f"Received {len(data)} bytes from {addr}")
-                except socket.timeout:
-                    print("No data received within the timeout period.")
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
-            else:
-                print("Fail to connect.")
+            # 3. Calcula as velocidades das rodas
+            wheel_speeds = omni_calc.calculate_wheel_speeds(robot_data)
 
-def test_Vision_Detections_Tracker():
-    VISION_IP = '224.5.23.2'
-    VISION_PORT = 10010
+            # 4. Envia o comando para o rádio
+            # ATENÇÃO: Verifique se esta ordem de rodas é a correta que definimos!
+            sender.send_command(
+                wheel_speeds['fl_speed'], wheel_speeds['fl_direction'],
+                wheel_speeds['fr_speed'], wheel_speeds['fr_direction'],
+                wheel_speeds['br_speed'], wheel_speeds['br_direction'], # M3 -> BR
+                wheel_speeds['bl_speed'], wheel_speeds['bl_direction'], # M4 -> BL
+                False # Kicker
+            )
+            
+            time.sleep(0.05) # Loop rápido
 
-    while True:
-        with UDPSocket(VISION_IP, VISION_PORT, 'vision_tracker_client') as vision_tracker_client:
-            if vision_tracker_client.connect():
-                sock = vision_tracker_client.get_socket()
-                try:
-                    data, addr = sock.recvfrom(2048)  # Buffer size is 2048 bytes
-                    if data:
-                        print(f"Received {len(data)} bytes from {addr}")
-                except socket.timeout:
-                    print("No data received within the timeout period.")
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
-            else:
-                print("Fail to connect.")
+    except KeyboardInterrupt:
+        print("\nTeste interrompido.")
+    finally:
+        # Envia comando de parada para todos os motores
+        print("Parando o robô...")
+        sender.send_command(0,0,0,0,0,0,0,0,False)
+        print("FIM.")
 
-def test_GC_Referee():
-    GC_IP = '224.5.23.1'
-    GC_PORT = 10003
-
-    gc = UDPClient(GC_IP, GC_PORT, 'gc_referee')
-    gc_thread = threading.Thread(target=gc.run)
-    gc_thread.start()
-    gc_parser = GCDataParser()
-
-    while True:
-        print("Last GC Data:")
-        data = gc.get_last_data()
-        if data:
-            gc_parser.parser_loop(data)
-        gc_data = gc_parser.get_last_data()
-        if gc_data:
-            command = gc_data.get('command')
-            print(command)
-            print("-----")
-        pass
 
 if __name__ == '__main__':
-    # ----------- FUNCIONANDO -----------
-    print("Testing Vision Detections on port 10006")
-    test_Vision_Detections()
-
-    # ----------- FUNCIONANDO -----------
-    # print("Testing Vision Detections Legacy on port 10005")
-    # test_Vision_Detections_Legacy()
-
-    # --------- NÃO FUNCIONANDO ---------
-    # print("Testing Vision Detections Tracker on port 10010")
-    # test_Vision_Detections_Tracker()
-
-    # ----------- FUNCIONANDO -----------
-    print("Testing GC Referee on port 10003")
-    test_GC_Referee()
+    main()

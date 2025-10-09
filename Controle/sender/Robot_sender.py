@@ -1,18 +1,39 @@
+from abc import ABC, abstractmethod
 FWD = 0
 BWD = 1
-class RobotSender:
-    """
-    Abstract interface for sending commands to a robot.
-    """
-    def send_command(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker=False):
-        """
-        Sends a command to the robot.
+class RobotSender(ABC):
+    def __init__(self, robot_id=0):
+        self.robot_id = robot_id
+        self.packet_size = 10
 
-        wheel_speeds: dict with keys:
-            fl_speed, fl_direction, bl_speed, bl_direction, fr_speed, fr_direction, br_speed, br_direction
-        kicker: True/False
-        """
-        raise NotImplementedError("This method should be implemented in subclasses")
+    def build_packet(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker=False):
+        fl_s = max(0, min(255, int(fl_s)))
+        fl_d = 1 if fl_d else 0
+        bl_s = max(0, min(255, int(bl_s)))
+        bl_d = 1 if bl_d else 0
+        fr_s = max(0, min(255, int(fr_s)))
+        fr_d = 1 if fr_d else 0
+        br_s = max(0, min(255, int(br_s)))
+        br_d = 1 if br_d else 0
+        kicker = 1 if kicker else 0
+
+        return bytearray([
+            self.robot_id,
+            fl_s, fl_d,
+            fr_s, fr_d,
+            bl_s, bl_d,
+            br_s, br_d,
+            kicker
+    ])
+    
+
+    def send_command(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker=False):
+        packet = self.build_packet(fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d)
+        self.send_packet(packet)
+
+    @abstractmethod
+    def send_packet(self, packet: bytearray):
+        pass
 
     def motor_test(self, motors, direction=FWD, speed=250, kicker=False):
         """

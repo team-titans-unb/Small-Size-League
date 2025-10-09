@@ -1,60 +1,101 @@
-import serial
 import time
-
-from Robot_sender import RobotSender
+import serial
 
 FWD = 0
 BWD = 1
+tx_port = "/tmp/ttyV0"
 
-class RadioSender(RobotSender):
-    def __init__(self, robot_id, port, baudrate=115200):
+class RadioSender():
+    def __init__(self, robot_id=3, port="/dev/ttyACM0", baudrate=115200):
         self.robot_id = robot_id
-        self.ser = serial.Serial(port, baudrate, timeout=1)
         self.packet_size = 10
-        time.sleep(1)
-        print(f"RadioSender configured: via {port}@{baudrate}")
+        self.serial = serial.Serial(port, baudrate, timeout=1)
 
-    def send_command(self, fl_s, fl_d, bl_s, bl_d, fr_s, fr_d, br_s, br_d, kicker):
-        fl_s = max(0, min(255, int(fl_s)))
-        fl_d = max(0, min(1, int(fl_d)))
-        bl_s = max(0, min(255, int(bl_s)))
-        bl_d = max(0, min(1, int(bl_d)))
-        fr_s = max(0, min(255, int(fr_s)))
-        fr_d = max(0, min(1, int(fr_d)))
-        br_s = max(0, min(255, int(br_s)))
-        br_d = max(0, min(1, int(br_d)))
-        kicker_byte = 1 if kicker else 0
+    def build_packet(self, m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker):
+        
+        # Headers
+        packet = bytearray([0xAA, 0x55])
+        tail = 0xFF
+        packet.append(self.robot_id)
+        
+        # Validate motor speeds and directions
+        m1 = max(0, min(255, int(m1)))
+        m1_dir = 1 if m1_dir else 0
+        m2 = max(0, min(255, int(m2)))
+        m2_dir = 1 if m2_dir else 0
+        m3 = max(0, min(255, int(m3)))
+        m3_dir = 1 if m3_dir else 0
+        m4 = max(0, min(255, int(m4)))
+        m4_dir = 1 if m4_dir else 0
+        kicker = 1 if kicker else 0
 
-        # monta pacote
-        packet = bytearray([
-            self.robot_id,
-            fl_s, fl_d,
-            bl_s, bl_d,
-            fr_s, fr_d,
-            br_s, br_d,
-            kicker_byte
-        ])
+        data = [m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker]
+        for value in data:
+            packet.append(value)
+    
+        # Calculate checksum
+        checksum = sum(data) % 256
+        packet.append(checksum)
+        packet.append(tail)
+        return packet
 
-        try:
-            self.ser.write(packet)
-            print(f"Pacote enviado p/ robô {self.robot_id}: {packet.hex()}")
-        except Exception as e:
-            print(f"Erro ao enviar pacote via serial: {e}")
+    def send_command(self, m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker):
+        packet = self.build_packet(m1, m1_dir, m2, m2_dir, m3, m3_dir, m4, m4_dir, kicker)
+        print(list(packet))
+        self.send_packet(packet)
 
+    def send_packet(self, packet: bytearray):
+        self.serial.write(packet)
+        self.serial.flush()
+
+    def motor_test(self, motors, direction=FWD, speed=250, kicker=False):
+        """
+        Returns a command tuple for a single motor or multiple motors.
+        
+        motor: str ("fl", "fr", "bl", "br") ou int (1=fl,2=fr,3=bl,4=br)
+        direction: 0=forward, 1=backward
+        speed: motor speed 0-255
+        kicker: True/False
+        """
+        cmd = [0,0,0,0,0,0,0,0,kicker]
+        motor_map = {
+            "fl": (0,1), 1: (0,1),
+            "fr": (2,3), 3: (2,3),
+            "bl": (4,5), 2: (4,5),
+            "br": (6,7), 4: (6,7)
+        }
+        if not isinstance(motors, list):
+            motors = [motors]
+        for m in motors:
+            if m not in motor_map:
+                raise ValueError(f"Invalid motor: {m}")
+            idx_speed, idx_dir = motor_map[m]
+            cmd[idx_speed] = speed
+            cmd[idx_dir] = direction
+        return tuple(cmd)
+    
 
 if __name__ == "__main__":
-    SERIAL_PORT = "/dev/ttyACM0"
-    ROBOT_ID = 1
-    sender = RadioSender(ROBOT_ID, SERIAL_PORT)
+    sender = RadioSender()
+    robot_id = 3
+    sender = RadioSender(robot_id=robot_id)
 
-    # Exemplo: mover front-left para frente
-    cmd = sender.motor_test("fl", FWD)
-    sender.send_command(*cmd)  # <- aqui desempacota a tupla
+    # Comandos individuais (m1 = FL, m2 = FR, m3 = BL, m4 = BR)
+    m1 = [200, 0, 0, 0, 0, 0, 0, 0, False]  # FL
+    m2 = [0, 0, 200, 0, 0, 0, 0, 0, False]  # FR
+    m3 = [0, 0, 0, 0, 200, 0, 0, 0, False]  # BL
+    m4 = [0, 0, 0, 0, 0, 0, 200, 0, False]  # BR
 
-    # Exemplo: mover front-left e back-right para trás
-    cmd2 = sender.motor_test([1,4], BWD)
-    sender.send_command(*cmd2)
+    # Comando para todos os motores juntos
+    all_motors = [250, 0, 250, 0, 250, 0, 250, 0, False]
 
-    # Exemplo: chute com front-left
-    cmd3 = sender.motor_test("fl", FWD, kicker=True)
-    sender.send_command(*cmd3)
+    # Intervalo entre comandos (em segundos)
+    delay = 2.0
+
+    print("Iniciando teste contínuo dos motores... (Ctrl+C para parar)")
+
+    while True:
+
+        cmd = sender.motor_test([1,2,3,4], direction=BWD)
+        sender.send_command(*cmd)
+    

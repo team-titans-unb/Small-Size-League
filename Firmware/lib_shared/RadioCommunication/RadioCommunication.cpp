@@ -33,7 +33,7 @@ void RadioCommunication::beginRX() {
     _radio.startListening();
 
     Serial.println("Radio pronto para receber pacotes.");
-    _radio.printDetails();
+    //_radio.printDetails();
 }
 
 // Inicializa para transmitir
@@ -61,7 +61,7 @@ void RadioCommunication::beginTX() {
     _radio.stopListening();
 
     Serial.println("Radio pronto para transmitir pacotes.");
-    _radio.printDetails();
+    //_radio.printDetails();
 }
 
 bool RadioCommunication::receivePacket(void* buffer, size_t bufferSize) {
