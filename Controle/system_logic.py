@@ -1,13 +1,15 @@
 from Controle.sender.radio_sender import RadioSender
-from vision.client import VisionClient
-from vision.data_receiver import VisionDataReceiver
+from vision.clientUDP import UDPClient
+from vision.parser import VisionDataParser
+from vision.gcparser import GCDataParser
 from strategy import Strategy
 from controller.motion_controller import MotionController
 from controller.omni_calculator import OmniCalculator
 from sender.udp_sender import UdpSender
 import config
+import threading
 
-from constants import VISION_IP, VISION_PORT, ROBOT_CONFIGS
+from constants import ROBOT_CONFIGS
 
 # Select the communication method
 USE_RADIO = False  # escolha aqui: True = Radio, False = UDP
@@ -25,12 +27,15 @@ def initialize_system():
     """
     print("Initializing system...")
 
-    vision_client = VisionClient(VISION_IP, VISION_PORT)
-    if not vision_client.connect():
-        print("ERROR: Could not connect to VisionClient.")
-        return None
-    vision_receiver = VisionDataReceiver(vision_client)
-    print(f"Connected to Vision at {VISION_IP}:{VISION_PORT}")
+    vision_client = UDPClient('224.5.23.2', 10006, 'vision')
+    vision_thread = threading.Thread(target=vision_client.run)
+    vision_thread.start()
+    vision_parser = VisionDataParser()
+
+    gc = UDPClient('224.5.23.1', 10003, 'gc_referee')
+    gc_thread = threading.Thread(target=gc.run)
+    gc_thread.start()
+    gc_parser = GCDataParser()
     
     robot_senders = {}
     for robot_id, cfg in ROBOT_CONFIGS.items():
@@ -40,7 +45,9 @@ def initialize_system():
 
     return {
         'vision_client': vision_client,
-        'vision_receiver': vision_receiver,
+        'vision_parser': vision_parser,
+        'gc_client': gc,
+        'gc_parser': gc_parser,
         'strategy': Strategy(),
         'motion_controller': MotionController(),
         'omni_calculator': OmniCalculator(

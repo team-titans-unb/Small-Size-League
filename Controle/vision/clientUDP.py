@@ -18,7 +18,7 @@ class UDPClient:
     def run(self):
         if not self._is_running.is_set():
             self._is_running.set()      
-        try:
+        while self._is_running.is_set():
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind(('', self.port))
@@ -29,17 +29,18 @@ class UDPClient:
 
             self.sock.settimeout(TIMEOUT)
 
-            try:
-                data, _ = self.sock.recvfrom(2048)
-                with self._lock:
-                    self.data = data
-                self.logger.info(f"Received {len(data)} bytes from {self.ip}:{self.port}")
-            except Exception as e:
-                self.logger.error(f"Error receiving data: {e}")
+            if not self.sock:
+                self.logger.error(f"Error initializing UDP Socket.")
+                continue
 
-        except Exception as e:
-            self.logger.error(f"Error initializing UDP Socket: {e}")
-            self.sock = None
+            data, _ = self.sock.recvfrom(2048)
+            if not data:
+                self.logger.warning("No data received.")
+                continue
+
+            with self._lock:
+                self.data = data
+            self.logger.info(f"Received {len(data)} bytes from {self.ip}:{self.port}")
 
     def get_last_data(self):
         with self._lock:

@@ -88,8 +88,8 @@ def test_GC_Referee():
 
 if __name__ == '__main__':
     # ----------- FUNCIONANDO -----------
-    # print("Testing Vision Detections on port 10006")
-    # test_Vision_Detections()
+    print("Testing Vision Detections on port 10006")
+    test_Vision_Detections()
 
     # ----------- FUNCIONANDO -----------
     # print("Testing Vision Detections Legacy on port 10005")
