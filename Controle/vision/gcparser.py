@@ -7,7 +7,7 @@ import threading
 class GCDataParser:
     def __init__(self):
         self.data = None
-        self.logger = setup_logger('gc_parser', 'logs/gc_parser.log')
+        self.logger = setup_logger('gc_parser', 'logs/parser.log')
 
         self.last_data = None
         self.last_frame_number = -1

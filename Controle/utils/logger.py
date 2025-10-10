@@ -5,7 +5,7 @@ import os
 def setup_logger(name: str, log_file: str, level=logging.INFO) -> logging.Logger:
     """Function to set up a logger with the specified name and log file."""
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
     
     # Create a logger
     logger = logging.getLogger(name)
@@ -27,3 +27,9 @@ def setup_logger(name: str, log_file: str, level=logging.INFO) -> logging.Logger
         logger.addHandler(ch)
 
     return logger
+
+if __name__ == "__main__":
+    # Example usage
+    logger = setup_logger('example_logger', 'logs/example.log')
+    logger.info("This is an info message.")
+    logger.error("This is an error message.")

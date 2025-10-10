@@ -7,7 +7,7 @@ import threading
 class VisionDataParser:
     def __init__(self):
         self.data = None
-        self.logger = setup_logger('vision_parser', 'logs/vision_parser.log')
+        self.logger = setup_logger('vision_parser', 'logs/parser.log')
 
         self.last_detection_data = None
         self.last_geometry_data = None
@@ -21,14 +21,16 @@ class VisionDataParser:
             frame = wr.SSL_WrapperPacket().FromString(self.data)
 
             if frame.detection:
+                detection = MessageToDict(frame.detection, preserving_proto_field_name=True)
+                self.logger.debug(f"Detection frame number: {detection.get('frame_number')}")
                 with self._lock:
-                    detection = frame.detection
-                    self.last_detection_data = MessageToDict(detection, preserving_proto_field_name=True)
+                    self.last_detection_data = detection
 
             if frame.geometry:
+                geometry = MessageToDict(frame.geometry, preserving_proto_field_name=True)
+                self.logger.debug("Geometry data received.")
                 with self._lock:
-                    geometry = frame.geometry
-                    self.last_geometry_data = MessageToDict(geometry, preserving_proto_field_name=True)
+                    self.last_geometry_data = geometry
 
         except DecodeError:
             self.logger.error("Failed to decode the received data.")

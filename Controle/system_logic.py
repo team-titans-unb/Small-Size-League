@@ -9,10 +9,12 @@ from controller.pid import OmniCalculator
 from sender.udp_sender import UdpSender
 import config
 import threading
-
+from utils.logger import setup_logger
 from constants import ROBOT_CONFIGS
 
-USE_RADIO = True
+logger = setup_logger('system_logic', 'logs/main.log')
+
+USE_RADIO = False
 
 def create_sender(robot_id, cfg):
     if USE_RADIO:
@@ -21,7 +23,7 @@ def create_sender(robot_id, cfg):
         return UdpSender(robot_ip=cfg['ip'], robot_port=cfg['port'])
 
 def initialize_system():
-    print("Initializing system...")
+    logger.info("Initializing system...")
 
     vision_client = UDPClient('224.5.23.2', 10006, 'vision')
     vision_thread = threading.Thread(target=vision_client.run)
@@ -37,7 +39,7 @@ def initialize_system():
     for robot_id, cfg in ROBOT_CONFIGS.items():
         sender = create_sender(robot_id, cfg)
         robot_senders[robot_id] = sender
-        print(f"Sender for Robot {robot_id} -> {sender.__class__.__name__}")
+        logger.info(f"Sender for Robot {robot_id} -> {sender.__class__.__name__}")
 
     return {
         'vision_client': vision_client,
